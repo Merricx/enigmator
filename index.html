@@ -1,0 +1,231 @@
+<!DOCTYPE html PUBLIC "-//W3C//DTD XHTML 1.0 Transitional//EN" "http://www.w3.org/TR/xhtml1/DTD/xhtml1-transitional.dtd">
+<html xmlns="http://www.w3.org/1999/xhtml">
+<head>
+<meta http-equiv="Content-Type" content="text/html; charset=utf-8" />
+<meta name="viewport" content="width=device-width, initial-scale=1.0" />
+<link rel="stylesheet" type="text/css" href="css/font.css">
+<link rel="stylesheet" type="text/css" href="css/style.css">
+<link rel="stylesheet" type="text/css" href="css/jquery-ui.css">
+<link rel="icon" href="img/icon.png">
+<title>Enigmator</title>
+</head>
+
+<script type="text/javascript" src="js/jquery.min.js"></script>
+<script type="text/javascript" src="js/jquery-ui.min.js"></script>
+<script type="text/javascript" src="js/enigmator.js"></script>
+<script type="text/javascript" src="js/main.js"></script>
+<script type="text/javascript">
+$(document).ready(function(){
+	var tools = [
+				"Base64","Base32","Base16","UUencoding","Ascii85",
+				"RSA","AES","DES","tripleDES","Blowfish","XOR","RC4","Rabbit","ROT13",
+				"Caesar Shift","Vigenere","Morse Code","Affine","Atbash","Bacon","Dancing Men","Gold Bug","Playfair","Beaufort","Railfence","ADFGVX","Pigpen","Bifid","Trifid","Grille","Autokey",
+				"MD5","MD4","SHA-1","SHA-256","SHA-512","SHA-3","RIPEMD-160",
+				"Crypto Identifier","Cryptogram Solver","Frequency Analysis","Massive Decrypter",
+				"String Converter","String Manipulation"
+	];
+
+	$("#search").autocomplete({
+		source: function(request, response){
+			var result = $.ui.autocomplete.filter(tools, request.term);
+			response(result.slice(0, 10))
+		},
+		minLength: 1,
+		autoFocus: true,
+		select: function(event, ui){
+			$(this).val(ui.item.value);
+		}
+	})
+
+	$(document).keydown(function(e){
+		if(($("#search").is(":focus")) && 
+			($(".ui-autocomplete").css("display") == "none")){
+			if(e.keyCode == 13)
+			{
+				var text = $("#search").val();
+				var upperCaseTools = tools.map(function(value){
+					return value.toUpperCase();
+				});
+				var index = upperCaseTools.indexOf(text.toUpperCase());
+				var page = "";
+
+				if(index < 5)
+				{
+					page = "encoding/";
+				}
+				else if(index < 31)
+				{
+					page = "cipher/";
+				}
+				else if(index < 38)
+				{
+					page = "hash/";
+				}
+				else if(index < 45)
+				{
+					page = "cryptanalysis/";
+				}
+
+				if(index != -1)
+				{
+					page += text.toLowerCase().split(' ').join('_');
+					window.location = page + ".html";
+				}
+				else
+				{
+					$(".not-found").stop(true, true);
+					$(".not-found").fadeIn("fast");
+					$(".not-found").delay(3000).fadeOut()
+				}
+			}
+		}
+	})
+})
+</script>
+
+<body>
+	<div class="header">
+		<center><a href="index.html"><img src="img/title.png"></a></center>
+	</div>
+
+	<div class="menubar noselect">
+	<div class="menu">
+		<ul>
+			<li id="btn-cipher" class="selected"><img src="img/key.png"></li>
+			<li id="btn-encoding"><img src="img/encoder.png"></li>
+			<li id="btn-hash"><img src="img/hash.png"></li>
+			<li id="btn-cryptanalysis"><img src="img/text.png"></li>
+			<li id="btn-about"><img src="img/information.png"></li>
+		</ul>
+	</div>
+
+	<div class="sub-menu">
+		<h2 id="sub-menu-title">Cipher</h2>
+		<ul id="menu-encoding" class="hide">
+			<a href="encoding/base64.html"><li>Base64</li></a>
+			<a href="encoding/base32.html"><li>Base32</li></a>
+			<a href="encoding/base16.html"><li>Base16</li></a>
+			<div class="space"></div>
+			<a href="encoding/uuencoding.html"><li>UUencoding</li></a>
+			<a href="encoding/ascii85.html"><li>Ascii85</li></a>
+		</ul>
+
+		<ul id="menu-cipher">
+			<a href="cipher/rsa.html"><li>RSA</li></a>
+
+			<div class="space"></div>
+			<a href="cipher/aes.html"><li>AES</li></a>
+			<a href="cipher/des.html"><li>DES</li></a>
+			<a href="cipher/tripledes.html"><li>TripleDES</li></a>
+			<a href="cipher/blowfish.html"><li>Blowfish</li></a>
+			<a href="cipher/xor.html"><li>XOR</li></a>
+
+			<div class="hide">
+			<a href="cipher/rc4.html"><li>RC4</li></a>
+			<a href="cipher/rabbit.html"><li>Rabbit</li></a>
+			</div>
+			<a class="more" href="javascript:void();"><li>More <span>&#x25BC;</span></li></a>
+
+			<div class="space"></div>
+			<a href="cipher/caesar_shift.html"><li>Caesar Shift</li></a>
+			<a href="cipher/vigenere.html"><li>Vigenere</li></a>
+			<a href="cipher/rot13.html"><li>ROT-13</li></a>
+
+			<div class="hide">
+			<a href="cipher/affine.html"><li>Affine</li></a>
+			<a href="cipher/atbash.html"><li>Atbash</li></a>
+			<a href="cipher/autokey.html"><li>Autokey</li></a>
+			<a href="cipher/beaufort.html"><li>Beaufort</li></a>
+			<a href="cipher/bacon.html"><li>Bacon</li></a>
+			<a href="cipher/bifid.html"><li>Bifid</li></a>
+			<a href="cipher/trifid.html"><li>Trifid</li></a>
+			<a href="cipher/grille.html"><li>Grille</li></a>
+			<a href="cipher/playfair.html"><li>Playfair</li></a>
+			<a href="cipher/railfence.html"><li>Railfence</li></a>
+			<a href="cipher/adfgvx.html"><li>ADFGVX</li></a>
+			<a href="cipher/morse_code.html"><li>Morse Code</li></a>
+			<a href="cipher/pigpen.html"><li>Pigpen</li></a>
+			<a href="cipher/dancing_men.html"><li>Dancing Men</li></a>
+			<a href="cipher/gold_bug.html"><li>Gold Bug</li></a>
+			</div>
+			<a class="more" href="javascript:void();"><li>More <span>&#x25BC;</span></li></a>
+
+			<div class="space"></div>
+		</ul>
+
+		<ul id="menu-hash" class="hide">
+			<a href="hash/md4.html"><li>MD4</li></a>
+			<a href="hash/md5.html"><li>MD5</li></a>
+
+			<div class="space"></div>
+			<a href="hash/sha-1.html"><li>SHA-1</li></a>
+			<a href="hash/sha-256.html"><li>SHA-256</li></a>
+			<a href="hash/sha-512.html"><li>SHA-512</li></a>
+			<a href="hash/sha-3.html"><li>SHA-3</li></a>
+
+			<div class="space"></div>
+			<a href="hash/ripemd-160.html"><li>RIPEMD-160</li></a>
+			<div class="space"></div>
+		</ul>
+
+		
+		<ul id="menu-cryptanalysis" class="hide">
+			<a href="cryptanalysis/crypto_identifier.html"><li>Crypto Identifier</li></a><a href="cryptanalysis/cryptogram_solver.html"><li>Massive Decrypter</li></a><div class="space"></div>
+			<a href="cryptanalysis/frequency_analysis.html"><li>Frequency Analysis</li></a>
+			<a href="cryptanalysis/cryptogram_solver.html"><li>Cryptogram Solver</li></a>
+			<div class="space"></div>
+			<a href="cryptanalysis/string_converter.html"><li>String Converter</li></a>
+			<a href="cryptanalysis/string_manipulation.html"><li>String Manipulation</li></a>
+			<div class="space"></div>
+		</ul>
+		
+
+		<ul id="menu-about" class="hide">
+			<a href="about/index.html"><li>About</li></a>
+			<a href="about/license.html"><li>License</li></a>
+			<a href="about/download.html"><li>Download</li></a>
+		</ul>
+
+	</div>
+	</div>
+
+	<div class="content">
+		<img class="logo" src="img/logo.png">
+		<div class="clear"></div>
+		
+		<center>
+		<!--
+		<div class="overview">
+
+			<div class="left">
+				<h4>Recent Tools</h4>
+				<ul>
+					<a href="#"><li>Morse Code</li></a>
+					<a href="#"><li>Morse Code</li></a>
+					<a href="#"><li>Morse Code</li></a>
+				</ul>
+			</div>
+
+			<div class="right">
+				<h4>Most Used</h4>
+				<ul>
+					<a href="#"><li>Morse Code</li></a>
+					<a href="#"><li>Morse Code</li></a>
+					<a href="#"><li>Morse Code</li></a>
+				</ul>
+			</div>
+
+		</div>
+		-->
+
+		<div class="search-box">
+			<img src="img/search.png" class="noselect">
+			<input id="search" type="text" placeholder="Search tool" autofocus>
+		</div>
+		<div class="not-found hide">
+			<h4>Tool not found.</h4>
+		</div>
+		</center>
+	</div>
+</body>
+</html>

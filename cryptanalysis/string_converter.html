@@ -1,0 +1,256 @@
+<!DOCTYPE html PUBLIC "-//W3C//DTD XHTML 1.0 Transitional//EN" "http://www.w3.org/TR/xhtml1/DTD/xhtml1-transitional.dtd">
+<html xmlns="http://www.w3.org/1999/xhtml">
+<head>
+<meta http-equiv="Content-Type" content="text/html; charset=utf-8" />
+<meta name="viewport" content="width=device-width, initial-scale=1.0" />
+<link rel="stylesheet" type="text/css" href="../css/font.css">
+<link rel="stylesheet" type="text/css" href="../css/style.css">
+<link rel="stylesheet" type="text/css" href="../css/jquery-ui.css">
+<link rel="icon" href="../img/icon.png">
+<title>String Converter - Enigmator</title>
+</head>
+
+<script type="text/javascript" src="../js/jquery.min.js"></script>
+<script type="text/javascript" src="../js/lib/utils/BigInt.js"></script>
+<script type="text/javascript" src="../js/enigmator.js"></script>
+<script type="text/javascript" src="../js/main.js"></script>
+<script type="text/javascript">
+
+	function convert(){
+		var str = $("#input").val();
+		var inputMode = $("#btn-mode-input button span").text();
+		var outputMode = $("#btn-mode-output button span").text();
+		var baseFrom = 10;
+		var baseTo = 10;
+
+		if(inputMode == outputMode){
+			$("#output").val(str);
+			return false;
+		}
+
+		if(inputMode == "Hexadecimal") baseFrom = 16;
+		else if(inputMode == "Octal") baseFrom = 8;
+		else if(inputMode == "Binary") baseFrom = 2;
+
+		if(outputMode == "Hexadecimal") baseTo = 16;
+		else if(outputMode == "Octal") baseTo = 8;
+		else if(outputMode == "Binary") baseTo = 2;
+
+		if(inputMode == "ASCII"){
+			var result = Enigmator.cryptanalysis.stringConvert.fromAscii(str, baseTo);
+		}
+		else {
+			
+			str = str.replace(/[\s+]/g, "");
+
+			if(outputMode == "ASCII"){
+				var result = Enigmator.cryptanalysis.stringConvert.toAscii(str, baseFrom);
+			}
+			else {
+				var result = Enigmator.cryptanalysis.stringConvert.convertBase(str).from(baseFrom).to(baseTo);
+			}
+		}
+
+		
+		$("#output").val(result);
+	}
+	
+	$(document).ready(function(){
+
+		$("#btn-unicode").prop("disabled", false);
+
+		$("#btn-convert").click(function(){
+			convert();
+		})
+
+		$("#btn-switch").click(function(){
+			var input = $("#btn-mode-input button span").text();
+			var output = $("#btn-mode-output button span").text();
+
+			$("#btn-mode-input span").text(output);
+			$("#btn-mode-output span").text(input);
+		})
+
+		$(".select ul, #btn-switch").click(function(){
+			var input = $("#btn-mode-input button span").text();
+			var output = $("#btn-mode-output button span").text();
+
+			if(input == "ASCII" || output == "ASCII"){
+				$("#btn-unicode").prop("disabled",false);
+			}
+			else {
+				$("#btn-unicode").prop("disabled",true);
+			}
+
+		})
+
+		
+	})
+</script>
+
+<style type="text/css">
+
+	div#div-input, div#div-output {
+		width: 50%;
+	}
+
+	div.select button {
+		width: 120px;
+	}
+
+	@media screen and (max-width: 640px) {
+		div#div-input, div#div-output {
+			width: auto;
+			float: none;
+		}
+	}
+
+</style>
+
+<body>
+	<div class="header">
+		<center><a href="../index.html"><img src="../img/title.png"></a></center>
+	</div>
+
+	<div class="menubar noselect">
+	<div class="menu">
+		<ul>
+			<li id="btn-cipher"><img src="../img/key.png"></li>
+			<li id="btn-encoding"><img src="../img/encoder.png"></li>
+			<li id="btn-hash"><img src="../img/hash.png"></li>
+			<li id="btn-cryptanalysis" class="selected"><img src="../img/text.png"></li>
+			<li id="btn-about"><img src="../img/information.png"></li>
+		</ul>
+	</div>
+
+	<div class="sub-menu">
+		<h2 id="sub-menu-title">Cryptanalysis</h2>
+		<ul id="menu-encoding" class="hide">
+			<a href="../encoding/base64.html"><li>Base64</li></a>
+			<a href="../encoding/base32.html"><li>Base32</li></a>
+			<a href="../encoding/base16.html"><li>Base16</li></a>
+			<div class="space"></div>
+			<a href="../encoding/uuencoding.html"><li>UUencoding</li></a>
+			<a href="../encoding/ascii85.html"><li>Ascii85</li></a>
+		</ul>
+
+		<ul id="menu-cipher" class="hide">
+			<a href="../cipher/rsa.html"><li>RSA</li></a>
+			
+			
+
+			<div class="space"></div>
+			<a href="../cipher/aes.html"><li>AES</li></a>
+			<a href="../cipher/des.html"><li>DES</li></a>
+			<a href="../cipher/tripledes.html"><li>TripleDES</li></a>
+			<a href="../cipher/blowfish.html"><li>Blowfish</li></a>
+			<a href="../cipher/xor.html"><li>XOR</li></a>
+
+			<div class="hide">
+			<a href="../cipher/rc4.html"><li>RC4</li></a>
+			<a href="../cipher/rabbit.html"><li>Rabbit</li></a>
+			</div>
+			<a class="more" href="javascript:void();"><li>More <span>&#x25BC;</span></li></a>
+
+			<div class="space"></div>
+			<a href="../cipher/caesar_shift.html"><li>Caesar Shift</li></a>
+			<a href="../cipher/vigenere.html"><li>Vigenere</li></a>
+			<a href="../cipher/rot13.html"><li>ROT-13</li></a>
+
+			<div class="hide">
+			<a href="../cipher/affine.html"><li>Affine</li></a>
+			<a href="../cipher/atbash.html"><li>Atbash</li></a>
+			<a href="../cipher/autokey.html"><li>Autokey</li></a>
+			<a href="../cipher/beaufort.html"><li>Beaufort</li></a>
+			<a href="../cipher/bacon.html"><li>Bacon</li></a>
+			<a href="../cipher/bifid.html"><li>Bifid</li></a>
+			<a href="../cipher/trifid.html"><li>Trifid</li></a>
+			<a href="../cipher/grille.html"><li>Grille</li></a>
+			<a href="../cipher/playfair.html"><li>Playfair</li></a>
+			<a href="../cipher/railfence.html"><li>Railfence</li></a>
+			<a href="../cipher/adfgvx.html"><li>ADFGVX</li></a>
+			<a href="../cipher/morse_code.html"><li>Morse Code</li></a>
+			<a href="../cipher/pigpen.html"><li>Pigpen</li></a>
+			<a href="../cipher/dancing_men.html"><li>Dancing Men</li></a>
+			<a href="../cipher/gold_bug.html"><li>Gold Bug</li></a>
+			</div>
+			<a class="more" href="javascript:void();"><li>More <span>&#x25BC;</span></li></a>
+
+			<div class="space"></div>
+		</ul>
+
+		<ul id="menu-hash" class="hide">
+			<a href="../hash/md4.html"><li>MD4</li></a>
+			<a href="../hash/md5.html"><li>MD5</li></a>
+			<div class="space"></div>
+			<a href="../hash/sha-1.html"><li>SHA-1</li></a>
+			<a href="../hash/sha-256.html"><li>SHA-256</li></a>
+			<a href="../hash/sha-512.html"><li>SHA-512</li></a>
+			<a href="../hash/sha-3.html"><li>SHA-3</li></a>
+			<div class="space"></div>
+			<a href="../hash/ripemd-160.html"><li>RIPEMD-160</li></a>
+			<div class="space"></div>
+		</ul>
+
+		<ul id="menu-cryptanalysis">
+			<a href="../cryptanalysis/crypto_identifier.html"><li>Crypto Identifier</li></a>
+			<a href="../cryptanalysis/massive_decrypter.html"><li>Massive Decrypter</li></a>
+			<div class="space"></div>
+			<a href="../cryptanalysis/frequency_analysis.html"><li>Frequency Analysis</li></a>
+			<a href="../cryptanalysis/cryptogram_solver.html"><li>Cryptogram Solver</li></a>
+			<div class="space"></div>
+			<a href="../cryptanalysis/string_converter.html" class="selected"><li>String Converter</li></a>
+			<a href="../cryptanalysis/string_manipulation.html"><li>String Manipulation</li></a>
+			<div class="space"></div>
+		</ul>
+
+		<ul id="menu-about" class="hide">
+			<a href="../about/index.html"><li>About</li></a>
+			<a href="../about/license.html"><li>License</li></a>
+			<a href="../about/download.html"><li>Download</li></a>
+		</ul>
+
+	</div>
+	</div>
+
+	<div class="content">
+	<center><div class="main">
+		<div class="title">
+			<h2>String Converter</h2>
+		</div>
+
+		<div id="div-input" class="left">
+			<div id="btn-mode-input" class="select left">
+				<button class="grey"><span>ASCII</span></button>
+				<ul class="option">
+					<li>ASCII</li>
+					<li>Hexadecimal</li>
+					<li>Decimal</li>
+					<li>Octal</li>
+					<li>Binary</li>
+				</ul>
+			</div>
+			<textarea id="input" autofocus spellcheck="false"></textarea>
+		</div>
+
+		<div id="div-output" class="left">
+			<div id="btn-mode-output" class="select left">
+				<button class="grey"><span>Hexadecimal</span></button>
+				<ul class="option">
+					<li>ASCII</li>
+					<li>Hexadecimal</li>
+					<li>Decimal</li>
+					<li>Octal</li>
+					<li>Binary</li>
+				</ul>
+			</div>
+			<textarea id="output" autofocus spellcheck="false" readonly></textarea>
+		</div>
+		<div class="clear"></div>
+		<button id="btn-convert" class="blue large left">Convert</button>
+		<button id="btn-switch" class="grey left">Switch</button>
+		<button id="btn-clear" class="grey large left">Clear</button>
+	</div></center>
+	</div>
+</body>
+</html>

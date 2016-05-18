@@ -1,0 +1,297 @@
+<!DOCTYPE html PUBLIC "-//W3C//DTD XHTML 1.0 Transitional//EN" "http://www.w3.org/TR/xhtml1/DTD/xhtml1-transitional.dtd">
+<html xmlns="http://www.w3.org/1999/xhtml">
+<head>
+<meta http-equiv="Content-Type" content="text/html; charset=utf-8" />
+<meta name="viewport" content="width=device-width, initial-scale=1.0" />
+<link rel="stylesheet" type="text/css" href="../css/font.css">
+<link rel="stylesheet" type="text/css" href="../css/style.css">
+<link rel="stylesheet" type="text/css" href="../css/jquery-ui.css">
+<link rel="icon" href="../img/icon.png">
+<title>Crypto Identifier - Enigmator</title>
+</head>
+
+<script type="text/javascript" src="../js/jquery.min.js"></script>
+<script type="text/javascript" src="../js/lib/crypto-identifier.js"></script>
+<script type="text/javascript" src="../js/enigmator.js"></script>
+<script type="text/javascript" src="../js/main.js"></script>
+<script type="text/javascript">
+	method = Enigmator.cryptanalysis.identify;
+
+	$(document).ready(function(){
+
+		$("#btn-identify").click(function(){
+
+			var result = {};
+			var noresult = false;
+			var str = $("#input").val();
+			var type = $("#btn-type button span").text().toLowerCase();
+			if(!str){
+				alert("Please, input text first.");
+				return;
+			}
+			else if(str.length < 20 && type == "cipher"){
+				alert("Input is too short to identify Cipher (min. 20 characters)");
+				return;
+			}
+			
+			result = method(str, type);
+
+			if(type == "cipher"){
+				
+				if(result.cipherAlgo !== undefined){
+					var element = "";
+					for(var i=0; i < result.cipherAlgo.length; i++){
+						element += "<li>"+result.cipherAlgo[i]+"</li>";
+					}
+					$("#cipher-type span").text(result.possibleCipher);
+					$("#cipher-type").show();
+					$("#cipher-algo h5").text("Most Common Algorithm : ");
+					$("#cipher-algo ul").html(element);
+				}
+				else {
+					var element = "";
+					for(var i=0; i < result.possibleCipher.length; i++){
+						element += "<li>"+result.possibleCipher[i]+"</li>";
+					}
+					$("#cipher-type").hide();
+					$("#cipher-algo h5").text("Possible Cipher : ");
+					$("#cipher-algo ul").html(element);
+				}
+				if(result.possibleCipher.length < 1)
+					noresult = true;
+				if(result.ic !== undefined){
+					$("#cipher-ic").show();
+					$("#cipher-ic span").text(result.ic);
+					$("#div-cipher h6").show();
+				}
+				else {
+					$("#cipher-ic").hide();
+					$("#div-cipher h6").hide();
+				}
+			}
+			else if(type == "encoding"){
+				var element = "";
+				for(var i=0; i < result.possibleEnc.length; i++){
+					element += "<li>"+result.possibleEnc[i]+"</li>";
+				}
+				$("#encoding-type").html(element);
+				if(result.possibleEnc.length < 1)
+					noresult = true;
+			}
+			else if(type == "hash"){
+				var element = "";
+				for(var i=0; i < result.possibleHash.length; i++){
+					element += "<li>"+result.possibleHash[i]+"</li>";
+				}
+				$("#hash-type").html(element);
+				if(result.possibleHash.length < 1)
+					noresult = true;
+			}
+
+			$("#div-output").show();
+			$("#output > div").hide();
+			if(noresult){
+				$("#div-noresult").show();
+			}
+			else {
+				$("#div-"+type).show();
+			}
+		})
+
+		$("#btn-clear").click(function(){
+			$("#div-output").hide();
+		})
+
+	})
+</script>
+
+<style type="text/css">
+	div#output {
+		margin: 5px;
+		padding: 10px;
+		background-color: #e0e0e0;
+		border-radius: 2px;
+		margin-bottom: 20px;
+		overflow: auto;
+	}
+
+	div#output h5 span {
+		color: #f44336;
+	}
+
+	div#output ul {
+		margin: 5px;
+		padding-left: 20px;
+	}
+
+	div#output ul li {
+		list-style: outside;
+		margin: 0;
+		color: #f44336;
+	}
+</style>
+
+<body>
+	<div class="header">
+		<center><a href="../index.html"><img src="../img/title.png"></a></center>
+	</div>
+
+	<div class="menubar noselect">
+	<div class="menu">
+		<ul>
+			<li id="btn-cipher"><img src="../img/key.png"></li>
+			<li id="btn-encoding"><img src="../img/encoder.png"></li>
+			<li id="btn-hash"><img src="../img/hash.png"></li>
+			<li id="btn-cryptanalysis" class="selected"><img src="../img/text.png"></li>
+			<li id="btn-about"><img src="../img/information.png"></li>
+		</ul>
+	</div>
+
+	<div class="sub-menu">
+		<h2 id="sub-menu-title">Cryptanalysis</h2>
+		<ul id="menu-encoding" class="hide">
+			<a href="../encoding/base64.html"><li>Base64</li></a>
+			<a href="../encoding/base32.html"><li>Base32</li></a>
+			<a href="../encoding/base16.html"><li>Base16</li></a>
+			<div class="space"></div>
+			<a href="../encoding/uuencoding.html"><li>UUencoding</li></a>
+			<a href="../encoding/ascii85.html"><li>Ascii85</li></a>
+		</ul>
+
+		<ul id="menu-cipher" class="hide">
+			<a href="../cipher/rsa.html"><li>RSA</li></a>
+			
+			<div class="space"></div>
+			<a href="../cipher/aes.html"><li>AES</li></a>
+			<a href="../cipher/des.html"><li>DES</li></a>
+			<a href="../cipher/tripledes.html"><li>TripleDES</li></a>
+			<a href="../cipher/blowfish.html"><li>Blowfish</li></a>
+			<a href="../cipher/xor.html"><li>XOR</li></a>
+
+			<div class="hide">
+			<a href="../cipher/rc4.html"><li>RC4</li></a>
+			<a href="../cipher/rabbit.html"><li>Rabbit</li></a>
+			</div>
+			<a class="more" href="javascript:void();"><li>More <span>&#x25BC;</span></li></a>
+
+			<div class="space"></div>
+			<a href="../cipher/caesar_shift.html"><li>Caesar Shift</li></a>
+			<a href="../cipher/vigenere.html"><li>Vigenere</li></a>
+			<a href="../cipher/rot13.html"><li>ROT-13</li></a>
+
+			<div class="hide">
+			<a href="../cipher/affine.html"><li>Affine</li></a>
+			<a href="../cipher/atbash.html"><li>Atbash</li></a>
+			<a href="../cipher/autokey.html"><li>Autokey</li></a>
+			<a href="../cipher/beaufort.html"><li>Beaufort</li></a>
+			<a href="../cipher/bacon.html"><li>Bacon</li></a>
+			<a href="../cipher/bifid.html"><li>Bifid</li></a>
+			<a href="../cipher/trifid.html"><li>Trifid</li></a>
+			<a href="../cipher/grille.html"><li>Grille</li></a>
+			<a href="../cipher/playfair.html"><li>Playfair</li></a>
+			<a href="../cipher/railfence.html"><li>Railfence</li></a>
+			<a href="../cipher/adfgvx.html"><li>ADFGVX</li></a>
+			<a href="../cipher/morse_code.html"><li>Morse Code</li></a>
+			<a href="../cipher/pigpen.html"><li>Pigpen</li></a>
+			<a href="../cipher/dancing_men.html"><li>Dancing Men</li></a>
+			<a href="../cipher/gold_bug.html"><li>Gold Bug</li></a>
+			</div>
+			<a class="more" href="javascript:void();"><li>More <span>&#x25BC;</span></li></a>
+
+			<div class="space"></div>
+		</ul>
+
+		<ul id="menu-hash" class="hide">
+			<a href="../hash/md4.html"><li>MD4</li></a>
+			<a href="../hash/md5.html"><li>MD5</li></a>
+			<div class="space"></div>
+			<a href="../hash/sha-1.html"><li>SHA-1</li></a>
+			<a href="../hash/sha-256.html"><li>SHA-256</li></a>
+			<a href="../hash/sha-512.html"><li>SHA-512</li></a>
+			<a href="../hash/sha-3.html"><li>SHA-3</li></a>
+			<div class="space"></div>
+			<a href="../hash/ripemd-160.html"><li>RIPEMD-160</li></a>
+			<div class="space"></div>
+		</ul>
+
+		<ul id="menu-cryptanalysis">
+			<a href="../cryptanalysis/crypto_identifier.html" class="selected"><li>Crypto Identifier</li></a>
+			<a href="../cryptanalysis/massive_decrypter.html"><li>Massive Decrypter</li></a>
+			<div class="space"></div>
+			<a href="../cryptanalysis/frequency_analysis.html"><li>Frequency Analysis</li></a>
+			<a href="../cryptanalysis/cryptogram_solver.html"><li>Cryptogram Solver</li></a>
+			<div class="space"></div>
+			<a href="../cryptanalysis/string_converter.html"><li>String Converter</li></a>
+			<a href="../cryptanalysis/string_manipulation.html"><li>String Manipulation</li></a>
+			<div class="space"></div>
+		</ul>
+
+		<ul id="menu-about" class="hide">
+			<a href="../about/index.html"><li>About</li></a>
+			<a href="../about/license.html"><li>License</li></a>
+			<a href="../about/download.html"><li>Download</li></a>
+		</ul>
+
+	</div>
+	</div>
+
+	<div class="content">
+	<center><div class="main">
+		<div class="title">
+			<h2>Crypto Identifier</h2>
+		</div>
+
+		<div class="clear"></div>
+
+		<h5>Input :</h5>
+		<textarea id="input" autofocus spellcheck="false" placeholder="Put any cryptic text such as Ciphertext, unknown Encoding, or even Hash"></textarea>
+		<div class="clear"></div>
+		<h6><i>Note : This tool can't identify Modern Cipher</i></h6>
+
+		<button id="btn-identify" class="blue large left">Identify</button>
+		<button id="btn-clear" class="grey left large">Clear</button>
+		<div id="btn-type" class="select left">
+			<button class="grey">Identify for : <span>Cipher</span></button>
+			<ul class="option">
+				<li>Cipher</li>
+				<li>Encoding</li>
+				<li>Hash</li>
+			</ul>
+		</div>
+		<div class="clear"></div>
+
+		<div id="div-output" class="hide">
+			<h5>Output :</h5>
+			<div id="output">
+				<div id="div-cipher" class="hide">
+					<h5 id="cipher-type">Possible Cipher Type : &emsp;<span></span></h5>
+					<h5 id="cipher-ic">Index of Coincidence : &emsp;<span></span></h5>
+					<div id="cipher-algo">
+						<h5>Most Common Algorithm : </h5>
+						<ul></ul>
+					</div>
+					<div class="space"></div>
+					<h6><i>Note : This was calculated based on normal English text</i></h6>
+				</div>
+
+				<div id="div-encoding" class="hide">
+					<h5>Possible Encoding : </h5>
+					<ul id="encoding-type"></ul>
+				</div>
+
+				<div id="div-hash" class="hide">
+					<h5>Possible Hash : </h5>
+					<ul id="hash-type"></ul>
+					<!---<h5>Other Possible Hash : </h5>
+					<ul id="hash-other"></ul>-->
+				</div>
+
+				<div id="div-noresult" class="hide">
+					<h5><span>No result found.</span></h5>
+				</div>
+			</div>
+		</div>
+	</div></center>
+	</div>
+</body>
+</html>

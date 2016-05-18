@@ -1,0 +1,505 @@
+<!DOCTYPE html PUBLIC "-//W3C//DTD XHTML 1.0 Transitional//EN" "http://www.w3.org/TR/xhtml1/DTD/xhtml1-transitional.dtd">
+<html xmlns="http://www.w3.org/1999/xhtml">
+<head>
+<meta http-equiv="Content-Type" content="text/html; charset=utf-8" />
+<meta name="viewport" content="width=device-width, initial-scale=1.0" />
+<link rel="stylesheet" type="text/css" href="../css/font.css">
+<link rel="stylesheet" type="text/css" href="../css/style.css">
+<link rel="stylesheet" type="text/css" href="../css/jquery-ui.css">
+<link rel="icon" href="../img/icon.png">
+<title>Massive Decrypter - Enigmator</title>
+</head>
+
+<script type="text/javascript" src="../js/jquery.min.js"></script>
+<script type="text/javascript" src="../js/lib/cryptojs/rollups/aes.js"></script>
+<script type="text/javascript" src="../js/lib/cryptojs/rollups/tripledes.js"></script>
+<script type="text/javascript" src="../js/lib/cryptojs/rollups/rc4.js"></script>
+<script type="text/javascript" src="../js/lib/cryptojs/rollups/rabbit.js"></script>
+<script type="text/javascript" src="../js/lib/cryptojs/components/mode-cfb-min.js"></script>
+<script type="text/javascript" src="../js/lib/cryptojs/components/mode-ecb-min.js"></script>
+<script type="text/javascript" src="../js/lib/cryptojs/components/mode-ctr-min.js"></script>
+<script type="text/javascript" src="../js/lib/cryptojs/components/mode-ofb-min.js"></script>
+<script type="text/javascript" src="../js/lib/utils/underscore.js"></script>
+<script type="text/javascript" src="../js/lib/xor/XORCipher.js"></script>
+<script type="text/javascript" src="../js/lib/blowfish/blowfish.js"></script>
+<script type="text/javascript" src="../js/enigmator.js"></script>
+<script type="text/javascript" src="../js/main.js"></script>
+<script type="text/javascript">
+
+	function massiveDecrypt(mode){
+
+		var text = $("#input").val();
+		var key = $("#key").val();
+		var keyAES = Enigmator.base16.enc(key);
+		var key2 = $("#key-2").val();
+		var iv = $("#iv").val();
+		var element = "";
+		if(!iv || $("#div-iv").css("display") == "none")
+			var iv = "0";
+
+
+		if(mode == "modern"){
+
+			var result = {"AES":{},"DES":{},"TripleDES":{},"RC4":{},"Rabbit":{},"Blowfish":{}};
+			var blockMode = ["CBC","ECB","CFB","CTR","OFB"];
+			var xor = "";
+			
+			for(var i=0; i < blockMode.length; i++){
+				if(!$("#checkbox-"+blockMode[i]).prop("checked")) continue;
+
+				if($("#checkbox-aes").prop("checked"))
+					result.AES[blockMode[i]] = Enigmator.aes.dec(text, keyAES, blockMode[i], iv);
+				if($("#checkbox-des").prop("checked"))
+					result.DES[blockMode[i]] = Enigmator.des.dec(text, key, blockMode[i], iv);
+				if($("#checkbox-3des").prop("checked")) 
+					result.TripleDES[blockMode[i]] = Enigmator.tripledes.dec(text, key, blockMode[i], iv);
+				if($("#checkbox-rc4").prop("checked"))
+					result.RC4[blockMode[i]] = Enigmator.rc4.dec(text, key, blockMode[i], iv);
+				if($("#checkbox-rabbit").prop("checked"))
+					result.Rabbit[blockMode[i]] = Enigmator.rabbit.dec(text, key, blockMode[i], iv);
+				if($("#checkbox-blowfish").prop("checked"))
+					result.Blowfish[blockMode[i]] = Enigmator.blowfish.dec(text, key, iv, blockMode[i]);
+			}
+			if($("#checkbox-xor").prop("checked"))
+				var xor = Enigmator.xor.dec(text, key);
+			
+			for(var i in result){
+				for(var j in result[i]){
+					if(result[i][j] != "")
+						element += "<div><h5 class='lighter'>"+i+" "+j+"</h5><textarea class='short' readonly>"+result[i][j]+"</textarea></div>";
+				}
+			}
+			if(xor != "")
+				element += "<div><h5 class='lighter'>XOR</h5><textarea class='short' readonly>"+xor+"</textarea></div>";
+		}
+		else if(mode == "classic"){
+
+			var result = {};
+			var numkey = false;
+			var numkey2 = false;
+			if(/^[0-9]+$/g.test(key)) numkey = true;
+			if(/^[0-9]+$/g.test(key2)) numkey2 = true;
+
+			if(numkey){
+				if($("#checkbox-caesar").prop("checked"))
+					result["Caesar"] = Enigmator.caesar(text, key);
+				if($("#checkbox-railfence").prop("checked"))
+					result["Railfence"] = Enigmator.railfence.dec(text, key);
+			}
+			if((numkey && !numkey2) || (!numkey && numkey2)){
+				if(numkey2){
+					if($("#checkbox-bifid").prop("checked"))
+						result["Bifid"] = Enigmator.bifid.dec(text, key, key2);
+					if($("#checkbox-trifid").prop("checked"))
+						result["Trifid"] = Enigmator.trifid.dec(text, key, key2);
+				}
+				else if(numkey) {
+					if($("#checkbox-bifid").prop("checked"))
+						result["Bifid"] = Enigmator.bifid.dec(text, key2, key);
+					if($("#checkbox-trifid").prop("checked"))
+						result["Trifid"] = Enigmator.trifid.dec(text, key2, key);
+				}
+			}
+			if((key % 2 == 1) && key != 13 && numkey2){
+				if($("#checkbox-affine").prop("checked"))
+					result["Affine"] = Enigmator.affine.dec(text, key, key2);
+			}
+			if(!numkey) {
+				if($("#checkbox-vigenere").prop("checked"))
+					result["Vigenere"] = Enigmator.vigenere.dec(text, key);
+				if($("#checkbox-autokey").prop("checked"))
+					result["Autokey"] = Enigmator.autokey.dec(text, key);
+				if($("#checkbox-beaufort").prop("checked"))
+					result["Beaufort"] = Enigmator.beaufort.enc(text, key);
+				if($("#checkbox-playfair").prop("checked"))
+					result["Playfair"] = Enigmator.playfair.dec(text, key);
+			}
+			if($("#checkbox-atbash").prop("checked"))
+				result["Atbash"] = Enigmator.atbash(text);
+			
+
+			for(var i in result){
+				if(result[i] != "")
+					element += "<div><h5 class='lighter'>"+i+"</h5><textarea class='short' readonly>"+result[i]+"</textarea></div>";
+			}
+		}
+
+		$("#output").html(element);
+	}
+
+	$(document).ready(function(){
+
+		$("#btn-decrypt").click(function(){
+			if($("#btn-mode-modern").hasClass("active"))
+				massiveDecrypt("modern");
+			else
+				massiveDecrypt("classic");
+		})
+
+		$("#btn-mode-modern").click(function(){
+			$("#div-modern-cipher").show();
+			$("#h5-cipher").html("Cipher Text <i>(Base64-encoded)</i> :");
+			$("#div-block-mode").show();
+			$("#div-block-mode").prev().show();
+			$("#btn-select-all-modern-ciphers").show();
+			$("#btn-select-all-mode").show();
+			$("#btn-openssl").show();
+			$("#div-iv").show();
+			$("#div-classic-cipher").hide();
+			$("#div-key-2").hide();
+			$("#btn-select-all-classic-ciphers").hide();
+		})
+
+		$("#btn-mode-classic").click(function(){
+			$("#div-modern-cipher").hide();
+			$("#h5-cipher").html("Cipher Text :");
+			$("#div-block-mode").hide();
+			$("#div-block-mode").prev().hide();
+			$("#btn-select-all-modern-ciphers").hide();
+			$("#btn-select-all-mode").hide();
+			$("#btn-openssl").hide();
+			$("#div-classic-cipher").show();
+			$("#div-key-2").show();
+			$("#btn-select-all-classic-ciphers").show();
+			$("#div-iv").hide();
+			$("#btn-openssl").removeClass("active");
+		})
+
+		$("#btn-select-all-modern-ciphers").click(function(){
+			if($(this).hasClass("active")){
+				$("#div-modern-cipher input[type=checkbox]").prop("checked", false);
+				$(this).removeClass("active");
+			}
+			else {
+				$("#div-modern-cipher input[type=checkbox]").prop("checked", true);
+				$(this).addClass("active");
+			}
+		})
+
+		$("#btn-select-all-mode").click(function(){
+			if($(this).hasClass("active")){
+				$("#div-block-mode input[type=checkbox]").prop("checked", false);
+				$(this).removeClass("active");
+			}
+			else {
+				$("#div-block-mode input[type=checkbox]").prop("checked", true);
+				$(this).addClass("active");
+			}
+		})
+
+		$("#btn-select-all-classic-ciphers").click(function(){
+			if($(this).hasClass("active")){
+				$("#div-classic-cipher input[type=checkbox]").prop("checked", false);
+				$(this).removeClass("active");
+			}
+			else {
+				$("#div-classic-cipher input[type=checkbox]").prop("checked", true);
+				$(this).addClass("active");
+			}
+		})
+
+		$("#div-modern-cipher input[type=checkbox]").click(function(){
+			if(!$(this).prop("checked")){
+				$("#btn-select-all-modern-ciphers").removeClass("active");
+			}
+		})
+		$("#div-classic-cipher input[type=checkbox]").click(function(){
+			if(!$(this).prop("checked")){
+				$("#btn-select-all-classic-ciphers").removeClass("active");
+			}
+		})
+		$("#div-block-mode input[type=checkbox]").click(function(){
+			if(!$(this).prop("checked")){
+				$("#btn-select-all-mode").removeClass("active");
+			}
+		})
+
+		$("#btn-show-empty").click(function(){
+			if($(this).hasClass("active")){
+				$(this).removeClass("active");
+			}
+			else {
+				$(this).addClass("active");
+			}
+		})
+
+		$("#btn-openssl").click(function(){
+			if($(this).hasClass("active")){
+				$(this).removeClass("active");
+				$("#div-iv").show();
+			}
+			else {
+				$(this).addClass("active");
+				$("#div-iv").hide();
+			}
+		})
+
+		$("#btn-clear").click(function(){
+			$("#output").html("");
+		})
+	})
+</script>
+
+<body>
+	<div class="header">
+		<center><a href="../index.html"><img src="../img/title.png"></a></center>
+	</div>
+
+	<div class="menubar noselect">
+	<div class="menu">
+		<ul>
+			<li id="btn-cipher"><img src="../img/key.png"></li>
+			<li id="btn-encoding"><img src="../img/encoder.png"></li>
+			<li id="btn-hash"><img src="../img/hash.png"></li>
+			<li id="btn-cryptanalysis" class="selected"><img src="../img/text.png"></li>
+			<li id="btn-about"><img src="../img/information.png"></li>
+		</ul>
+	</div>
+
+	<div class="sub-menu">
+		<h2 id="sub-menu-title">Cryptanalysis</h2>
+		<ul id="menu-encoding" class="hide">
+			<a href="../encoding/base64.html"><li>Base64</li></a>
+			<a href="../encoding/base32.html"><li>Base32</li></a>
+			<a href="../encoding/base16.html"><li>Base16</li></a>
+			<div class="space"></div>
+			<a href="../encoding/uuencoding.html"><li>UUencoding</li></a>
+			<a href="../encoding/ascii85.html"><li>Ascii85</li></a>
+		</ul>
+
+		<ul id="menu-cipher" class="hide">
+			<a href="../cipher/rsa.html"><li>RSA</li></a>
+			
+			
+
+			<div class="space"></div>
+			<a href="../cipher/aes.html"><li>AES</li></a>
+			<a href="../cipher/des.html"><li>DES</li></a>
+			<a href="../cipher/tripledes.html"><li>TripleDES</li></a>
+			<a href="../cipher/blowfish.html"><li>Blowfish</li></a>
+			<a href="../cipher/xor.html"><li>XOR</li></a>
+
+			<div class="hide">
+			<a href="../cipher/rc4.html"><li>RC4</li></a>
+			<a href="../cipher/rabbit.html"><li>Rabbit</li></a>
+			</div>
+			<a class="more" href="javascript:void();"><li>More <span>&#x25BC;</span></li></a>
+
+			<div class="space"></div>
+			<a href="../cipher/caesar_shift.html"><li>Caesar Shift</li></a>
+			<a href="../cipher/vigenere.html"><li>Vigenere</li></a>
+			<a href="../cipher/rot13.html"><li>ROT-13</li></a>
+
+			<div class="hide">
+			<a href="../cipher/affine.html"><li>Affine</li></a>
+			<a href="../cipher/atbash.html"><li>Atbash</li></a>
+			<a href="../cipher/autokey.html"><li>Autokey</li></a>
+			<a href="../cipher/beaufort.html"><li>Beaufort</li></a>
+			<a href="../cipher/bacon.html"><li>Bacon</li></a>
+			<a href="../cipher/bifid.html"><li>Bifid</li></a>
+			<a href="../cipher/trifid.html"><li>Trifid</li></a>
+			<a href="../cipher/grille.html"><li>Grille</li></a>
+			<a href="../cipher/playfair.html"><li>Playfair</li></a>
+			<a href="../cipher/railfence.html"><li>Railfence</li></a>
+			<a href="../cipher/adfgvx.html"><li>ADFGVX</li></a>
+			<a href="../cipher/morse_code.html"><li>Morse Code</li></a>
+			<a href="../cipher/pigpen.html"><li>Pigpen</li></a>
+			<a href="../cipher/dancing_men.html"><li>Dancing Men</li></a>
+			<a href="../cipher/gold_bug.html"><li>Gold Bug</li></a>
+			</div>
+			<a class="more" href="javascript:void();"><li>More <span>&#x25BC;</span></li></a>
+
+			<div class="space"></div>
+		</ul>
+
+		<ul id="menu-hash" class="hide">
+			<a href="../hash/md4.html"><li>MD4</li></a>
+			<a href="../hash/md5.html"><li>MD5</li></a>
+			<div class="space"></div>
+			<a href="../hash/sha-1.html"><li>SHA-1</li></a>
+			<a href="../hash/sha-256.html"><li>SHA-256</li></a>
+			<a href="../hash/sha-512.html"><li>SHA-512</li></a>
+			<a href="../hash/sha-3.html"><li>SHA-3</li></a>
+			<div class="space"></div>
+			<a href="../hash/ripemd-160.html"><li>RIPEMD-160</li></a>
+			<div class="space"></div>
+		</ul>
+
+		<ul id="menu-cryptanalysis">
+			<a href="../cryptanalysis/crypto_identifier.html"><li>Crypto Identifier</li></a>
+			<a href="../cryptanalysis/massive_decrypter.html" class="selected"><li>Massive Decrypter</li></a>
+			<div class="space"></div>
+			<a href="../cryptanalysis/frequency_analysis.html"><li>Frequency Analysis</li></a>
+			<a href="../cryptanalysis/cryptogram_solver.html"><li>Cryptogram Solver</li></a>
+			<div class="space"></div>
+			<a href="../cryptanalysis/string_converter.html"><li>String Converter</li></a>
+			<a href="../cryptanalysis/string_manipulation.html"><li>String Manipulation</li></a>
+			<div class="space"></div>
+		</ul>
+
+		<ul id="menu-about" class="hide">
+			<a href="../about/index.html"><li>About</li></a>
+			<a href="../about/license.html"><li>License</li></a>
+			<a href="../about/download.html"><li>Download</li></a>
+		</ul>
+
+	</div>
+	</div>
+
+	<div class="content">
+	<center><div class="main">
+		<div class="title">
+			<h2>Massive Decrypter</h2>
+		</div>
+
+		<div class="toggle-button">
+			<button id="btn-mode-modern" class="grey active">Modern Cipher</button>
+			<button id="btn-mode-classic" class="grey">Classic Cipher</button>
+		</div>
+		<div class="clear"></div>
+
+		<h5>Ciphers :</h5>
+		<div id="div-modern-cipher" class="group noselect">
+			<div>
+				<input type="checkbox" id="checkbox-aes" checked>
+				<label for="checkbox-aes">AES</label>
+			</div>
+			<div>
+				<input type="checkbox" id="checkbox-des" checked>
+				<label for="checkbox-des">DES</label>
+			</div>
+			<div>
+				<input type="checkbox" id="checkbox-3des" checked>
+				<label for="checkbox-3des">TripleDES</label>
+			</div>
+			<div>
+				<input type="checkbox" id="checkbox-blowfish" checked>
+				<label for="checkbox-blowfish">Blowfish</label>
+			</div>
+			<div>
+				<input type="checkbox" id="checkbox-xor" checked>
+				<label for="checkbox-xor">XOR</label>
+			</div>
+			<div>
+				<input type="checkbox" id="checkbox-rc4" checked>
+				<label for="checkbox-rc4">RC4</label>
+			</div>
+			<div>
+				<input type="checkbox" id="checkbox-rabbit" checked>
+				<label for="checkbox-rabbit">Rabbit</label>
+			</div>
+		</div>
+		<button id="btn-select-all-modern-ciphers" class="grey left large active">Select All</button>
+		<div class="clear"></div>
+		<h5>Block Mode :</h5>
+		<div id="div-block-mode" class="group noselect">
+			<div>
+				<input type="checkbox" id="checkbox-CBC" checked>
+				<label for="checkbox-CBC">CBC</label>
+			</div>
+			<div>
+				<input type="checkbox" id="checkbox-ECB" checked>
+				<label for="checkbox-ECB">ECB</label>
+			</div>
+			<div>
+				<input type="checkbox" id="checkbox-CFB" checked>
+				<label for="checkbox-CFB">CFB</label>
+			</div>
+			<div>
+				<input type="checkbox" id="checkbox-CTR" checked>
+				<label for="checkbox-CTR">CTR</label>
+			</div>
+			<div>
+				<input type="checkbox" id="checkbox-OFB" checked>
+				<label for="checkbox-OFB">OFB</label>
+			</div>
+		</div>
+		<div id="div-classic-cipher" class="group noselect hide">
+			<div>
+				<input type="checkbox" id="checkbox-caesar" checked>
+				<label for="checkbox-caesar">Caesar</label>
+			</div>
+			<div>
+				<input type="checkbox" id="checkbox-vigenere" checked>
+				<label for="checkbox-vigenere">Vigenere</label>
+			</div>
+			<div>
+				<input type="checkbox" id="checkbox-affine" checked>
+				<label for="checkbox-affine">Affine</label>
+			</div>
+			<div>
+				<input type="checkbox" id="checkbox-atbash" checked>
+				<label for="checkbox-atbash">Atbash</label>
+			</div>
+			<div>
+				<input type="checkbox" id="checkbox-autokey" checked>
+				<label for="checkbox-autokey">Autokey</label>
+			</div>
+			<div>
+				<input type="checkbox" id="checkbox-beaufort" checked>
+				<label for="checkbox-beaufort">Beaufort</label>
+			</div>
+			<div>
+				<input type="checkbox" id="checkbox-bifid" checked>
+				<label for="checkbox-bifid">Bifid</label>
+			</div>
+			<div>
+				<input type="checkbox" id="checkbox-trifid" checked>
+				<label for="checkbox-trifid">Trifid</label>
+			</div>
+			<div>
+				<input type="checkbox" id="checkbox-playfair" checked>
+				<label for="checkbox-playfair">Playfair</label>
+			</div>
+			<div>
+				<input type="checkbox" id="checkbox-railfence" checked>
+				<label for="checkbox-railfence">Railfence</label>
+			</div>
+		</div>
+		<button id="btn-select-all-mode" class="grey left large active">Select All</button>
+		<button id="btn-select-all-classic-ciphers" class="grey left large active hide">Select All</button>
+		<!--<div id="btn-block-mode" class="select left">
+			<button class="grey">Block Mode : <span>All</span></button>
+			<ul class="option">
+				<li>All</li>
+				<li>CBC</li>
+				<li>ECB</li>
+				<li>CFB</li>
+				<li>CTR</li>
+				<li>OFB</li>
+			</ul>
+		</div>-->
+		<button id="btn-openssl" class="grey left">OpenSSL Mode</button>
+		<!--<button id="btn-show-empty" class="grey left">Show Empty Result</button>-->
+		<div class="clear"></div>
+		<h5 id="h5-cipher">Cipher Text <i>(Base64-encoded)</i> :</h5>
+		<textarea id="input" autofocus spellcheck="false"></textarea>
+		<div class="clear"></div>
+		<h5>Known Key :</h5>
+		<input type="text" id="key">
+		<div class="clear"></div>
+		<div id="div-key-2" class="hide">
+			<h5>Known Key 2 :</h5>
+			<input type="text" id="key-2">
+			<div class="clear"></div>
+			<h6><i>Note : Key 2 can be entered with Period, Permutation key, or something else if necessary</i></h6>
+		</div>
+		<div class="clear"></div>
+		<div id="div-iv">
+			<h5>Initial Vector (IV) :</h5>
+			<input type="text" id="iv" maxlength="32">
+			<div class="clear"></div>
+			<h6><i>Note : IV must be in Hex</i></h6>
+		</div>
+		<div class="clear"></div>
+		<button id="btn-decrypt" class="blue left large">Decrypt Now</button>
+		<button id="btn-clear" class="grey left large">Clear</button>
+		<div class="clear"></div>
+
+		<div id="output">
+
+		</div>
+	</div></center>
+	</div>
+</body>
+</html>

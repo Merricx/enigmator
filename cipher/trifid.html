@@ -1,0 +1,284 @@
+<!DOCTYPE html PUBLIC "-//W3C//DTD XHTML 1.0 Transitional//EN" "http://www.w3.org/TR/xhtml1/DTD/xhtml1-transitional.dtd">
+<html xmlns="http://www.w3.org/1999/xhtml">
+<head>
+<meta http-equiv="Content-Type" content="text/html; charset=utf-8" />
+<meta name="viewport" content="width=device-width, initial-scale=1.0" />
+<link rel="stylesheet" type="text/css" href="../css/font.css">
+<link rel="stylesheet" type="text/css" href="../css/style.css">
+<link rel="stylesheet" type="text/css" href="../css/jquery-ui.css">
+<link rel="icon" href="../img/icon.png">
+<title>Trifid - Enigmator</title>
+</head>
+
+<script type="text/javascript" src="../js/jquery.min.js"></script>
+<script type="text/javascript" src="../js/enigmator.js"></script>
+<script type="text/javascript" src="../js/main.js"></script>
+<script type="text/javascript">
+	method = Enigmator.trifid;
+
+	execute = function(methodType){
+		var input = $("#input").val();
+		var keysquare = $("#keysquare").val();
+		var period = $("#period").val();
+
+		if(keysquare.length != 27){
+			alert("Keysquare must be 27 characters in length");
+			return false;
+		}
+		if(isNaN(period) || period < 1){
+			alert("Period must be an integer and greater than 0");
+			return false;
+		}
+
+
+		var str = methodType(input, keysquare, period);
+		$("#output").val(str);
+	}
+
+	function loadSquare(key){
+		clearSquare();
+		var index = 0;
+		for(var i=1; i <= 9;i++){
+			var tr = $("#tr-row-"+i);
+			for(var j=0; j < 3;j++){
+				tr.append("<td>"+key.charAt(index).toUpperCase()+"</td>");
+				index++;
+			}
+		}
+	}
+
+	function clearSquare(){
+		for(var i=1; i <= 9;i++){
+			var j = "123";
+			var tr = $("#tr-row-"+i);
+			tr.html("<td class='h'>"+j.charAt((i-1) % 3)+"</td>");
+		}
+	}
+
+	$(document).ready(function(){
+		loadSquare($("#keysquare").val());
+
+		$("#keysquare").bind("change keyup keydown", function(){
+			loadSquare($(this).val());
+		});
+
+		$("#btn-preview").click(function(){
+			if(!$(this).hasClass("active")){
+				$(".grid").show();
+				$(this).addClass("active");
+			}
+			else
+			{
+				$(".grid").hide();
+				$(this).removeClass("active");
+			}
+		})
+
+		$("#btn-brute-force").click(function(){
+			if(!$(this).hasClass("active"))
+			{
+				$("#div-period").hide();
+				$(this).addClass("active");
+				$("#btn-enc").prop("disabled",true);
+			}
+			else
+			{
+				$("#div-period").show();
+				$(this).removeClass("active");
+				$("#btn-enc").prop("disabled",false);
+			}
+		})
+
+		$("#btn-clear").click(function(){
+			loadSquare("");
+		})
+
+		$("#btn-generate").click(function(){
+			var str = method.generateKey();
+			$("#keysquare").val(str);
+			loadSquare(str);
+		})
+	})
+</script>
+
+<body>
+	<div class="header">
+		<center><a href="../index.html"><img src="../img/title.png"></a></center>
+	</div>
+
+	<div class="menubar noselect">
+	<div class="menu">
+		<ul>
+			<li id="btn-cipher" class="selected"><img src="../img/key.png"></li>
+			<li id="btn-encoding"><img src="../img/encoder.png"></li>
+			<li id="btn-hash"><img src="../img/hash.png"></li>
+			<li id="btn-cryptanalysis"><img src="../img/text.png"></li>
+			<li id="btn-about"><img src="../img/information.png"></li>
+		</ul>
+	</div>
+
+	<div class="sub-menu">
+		<h2 id="sub-menu-title">Cipher</h2>
+		<ul id="menu-encoding" class="hide">
+			<a href="../encoding/base64.html"><li>Base64</li></a>
+			<a href="../encoding/base32.html"><li>Base32</li></a>
+			<a href="../encoding/base16.html"><li>Base16</li></a>
+			<div class="space"></div>
+			<a href="../encoding/uuencoding.html"><li>UUencoding</li></a>
+			<a href="../encoding/ascii85.html"><li>Ascii85</li></a>
+		</ul>
+
+		<ul id="menu-cipher">
+			<a href="../cipher/rsa.html"><li>RSA</li></a>
+			
+			
+
+			<div class="space"></div>
+			<a href="../cipher/aes.html"><li>AES</li></a>
+			<a href="../cipher/des.html"><li>DES</li></a>
+			<a href="../cipher/tripledes.html"><li>TripleDES</li></a>
+			<a href="../cipher/blowfish.html"><li>Blowfish</li></a>
+			<a href="../cipher/xor.html"><li>XOR</li></a>
+
+			<div class="hide">
+			<a href="../cipher/rc4.html"><li>RC4</li></a>
+			<a href="../cipher/rabbit.html"><li>Rabbit</li></a>
+			</div>
+			<a class="more" href="javascript:void();"><li>More <span>&#x25BC;</span></li></a>
+
+			<div class="space"></div>
+			<a href="../cipher/caesar_shift.html"><li>Caesar Shift</li></a>
+			<a href="../cipher/vigenere.html"><li>Vigenere</li></a>
+			<a href="../cipher/rot13.html"><li>ROT-13</li></a>
+
+			<div>
+			<a href="../cipher/affine.html"><li>Affine</li></a>
+			<a href="../cipher/atbash.html"><li>Atbash</li></a>
+			<a href="../cipher/autokey.html"><li>Autokey</li></a>
+			<a href="../cipher/beaufort.html"><li>Beaufort</li></a>
+			<a href="../cipher/bacon.html"><li>Bacon</li></a>
+			<a href="../cipher/bifid.html"><li>Bifid</li></a>
+			<a href="../cipher/trifid.html" class="selected"><li>Trifid</li></a>
+			<a href="../cipher/grille.html"><li>Grille</li></a>
+			<a href="../cipher/playfair.html"><li>Playfair</li></a>
+			<a href="../cipher/railfence.html"><li>Railfence</li></a>
+			<a href="../cipher/adfgvx.html"><li>ADFGVX</li></a>
+			<a href="../cipher/morse_code.html"><li>Morse Code</li></a>
+			<a href="../cipher/pigpen.html"><li>Pigpen</li></a>
+			<a href="../cipher/dancing_men.html"><li>Dancing Men</li></a>
+			<a href="../cipher/gold_bug.html"><li>Gold Bug</li></a>
+			</div>
+			<a class="more" href="javascript:void();"><li>Less <span>&#x25B2;</span></li></a>
+
+			<div class="space"></div>
+		</ul>
+
+		<ul id="menu-hash" class="hide">
+			<a href="../hash/md4.html"><li>MD4</li></a>
+			<a href="../hash/md5.html"><li>MD5</li></a>
+			<div class="space"></div>
+			<a href="../hash/sha-1.html"><li>SHA-1</li></a>
+			<a href="../hash/sha-256.html"><li>SHA-256</li></a>
+			<a href="../hash/sha-512.html"><li>SHA-512</li></a>
+			<a href="../hash/sha-3.html"><li>SHA-3</li></a>
+			<div class="space"></div>
+			<a href="../hash/ripemd-160.html"><li>RIPEMD-160</li></a>
+			<div class="space"></div>
+		</ul>
+
+		<ul id="menu-cryptanalysis" class="hide">
+			<a href="../cryptanalysis/crypto_identifier.html"><li>Crypto Identifier</li></a>
+			<a href="../cryptanalysis/massive_decrypter.html"><li>Massive Decrypter</li></a>
+			<div class="space"></div>
+			<a href="../cryptanalysis/frequency_analysis.html"><li>Frequency Analysis</li></a>
+			<a href="../cryptanalysis/cryptogram_solver.html"><li>Cryptogram Solver</li></a>
+			<div class="space"></div>
+			<a href="../cryptanalysis/string_converter.html"><li>String Converter</li></a>
+			<a href="../cryptanalysis/string_manipulation.html"><li>String Manipulation</li></a>
+			<div class="space"></div>
+		</ul>
+
+		<ul id="menu-about" class="hide">
+			<a href="../about/index.html"><li>About</li></a>
+			<a href="../about/license.html"><li>License</li></a>
+			<a href="../about/download.html"><li>Download</li></a>
+		</ul>
+
+	</div>
+	</div>
+
+	<div class="content">
+	<center><div class="main">
+		<div class="title">
+			<h2>Trifid Cipher</h2>
+		</div>
+
+		<div class="clear"></div>
+
+		<h5>Input :</h5>
+		<textarea id="input" autofocus spellcheck="false"></textarea>
+		<div class="clear"></div>
+		<div id="div-square">
+			<h5>Keysquare :</h5>
+			<input type="text" id="keysquare" value="ABCDEFGHIJKLMNOPQRSTUVWXYZ." maxlength="27">
+			<div class="clear"></div>
+			<button id="btn-preview" class="left grey">Preview</button>
+			<button id="btn-generate" class="left grey">Random Keysquare</button>
+			<div class="clear"></div>
+			<table class="grid hide left">
+				<tr>
+					<td class="h"></td>
+					<td class="h">1</td>
+					<td class="h">2</td>
+					<td class="h">3</td>
+				</tr>
+				<tr id="tr-row-1"><td class="h">1</td></tr>
+				<tr id="tr-row-2"><td class="h">2</td></tr>
+				<tr id="tr-row-3"><td class="h">3</td></tr>
+			</table>
+			<table class="grid hide left">
+				<tr>
+					<td class="h"></td>
+					<td class="h">1</td>
+					<td class="h">2</td>
+					<td class="h">3</td>
+				</tr>
+				<tr id="tr-row-4"><td class="h">1</td></tr>
+				<tr id="tr-row-5"><td class="h">2</td></tr>
+				<tr id="tr-row-6"><td class="h">3</td></tr>
+			</table>
+			<table class="grid hide left">
+				<tr>
+					<td class="h"></td>
+					<td class="h">1</td>
+					<td class="h">2</td>
+					<td class="h">3</td>
+				</tr>
+				<tr id="tr-row-7"><td class="h">1</td></tr>
+				<tr id="tr-row-8"><td class="h">2</td></tr>
+				<tr id="tr-row-9"><td class="h">3</td></tr>
+			</table>
+		</div>
+		<div class="clear"></div>
+		<div id="div-period">
+			<h5 class="left">Period :</h5>
+			<input type="text" id="period" class="small" maxlength="2" value="5">
+			<div class="clear"></div>
+		</div>
+
+		<button id="btn-enc" class="red left">Encrypt</button>
+		<button id="btn-dec" class="blue left">Decrypt</button>
+		<!--<button id="btn-brute-force" class="grey left">Brute-Force Period</button>-->
+		<div class="clear"></div>
+
+		<h5>Output :</h5>
+		<textarea id="output" readonly></textarea>
+		<button id="btn-clear" class="grey left large">Clear</button>
+		<div class="clear"></div>
+		<div id="div-brute-force">
+			
+		</div>
+	</div></center>
+	</div>
+</body>
+</html>
