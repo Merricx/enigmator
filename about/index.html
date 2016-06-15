@@ -11,6 +11,15 @@
 
 <script type="text/javascript" src="../js/jquery.min.js"></script>
 <script type="text/javascript" src="../js/main.js"></script>
+<script type="text/javascript" src="../js/enigmator.js"></script>
+<script type="text/javascript">
+
+	$(document).ready(function(){
+
+		$("#version").text("Enigmator v"+Enigmator.version);
+	})
+	
+</script>
 
 <body>
 	<div class="header">
@@ -126,7 +135,7 @@
 
 		<div class="clear"></div>
 		<div>
-			<h4>Enigmator v0.1.0</h4>
+			<h4 id="version"></h4>
 			<p><b>by <a href="http://github.com/merricx">Merricx</a></b></p>
 			<br>
 			<p>Enigmator is All-in-One Web-based Cryptography Tools and was built with Javascript. <br>Enigmator is collection of tools which packaged some great Libraries (such as CryptoJS, JSEncrypt, etc..) into one Code, so it's become easier to use.
