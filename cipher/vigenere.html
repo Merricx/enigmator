@@ -62,10 +62,27 @@
 		crackDecrypt();
 	}
 
+	function generateKeysTable(){
+		var currentKey = "";
+
+		$("tr").empty();
+		for(var i=0; i < 3; i++){
+			var tr = $("#tr-row-"+(i+1));
+			for(var j=0; j < possibleKeys.length; j++){
+				if(i == 0)
+					tr.append("<td class='td-"+j+" selected'>"+possibleKeys[j][i]+"</td>");
+				else
+					tr.append("<td class='td-"+j+"'>"+possibleKeys[j][i]+"</td>");
+				
+			}
+		}
+	}
+
 	function crackDecrypt(){
 		var ciphertext = $("#input").val();
 		var selectedKey = "";
-		var otherPossibleKeys = "";
+
+		generateKeysTable();
 
 		for(var i=0; i < possibleKeys.length; i++){
 			selectedKey += possibleKeys[i][0];
@@ -74,16 +91,38 @@
 		var plaintext = Enigmator.vigenere.dec(ciphertext, selectedKey);
 
 		$("#h5-key-length").text("Possible key length = "+selectedKeyLength);
-		$("#h5-key").text("Most Possible key = "+selectedKey);
-		//$("#h5-other-key").text("Other Possible Keys = ");
+		$("#h5-key").text("Current key = "+selectedKey);
 		$("#output").val(plaintext);
 		$("#div-crack").show();
 		$("#btn-try-other-key-length").show();
 	}
 
+	function updateCrack(){
+		var ciphertext = $("#input").val();
+		var selectedKey = "";
+
+		for(var i=0; i < selectedKeyLength; i++){
+			$("td.td-"+i+".selected").each(function(){
+				selectedKey += $(this).text();
+			})
+		}
+		var plaintext = Enigmator.vigenere.dec(ciphertext, selectedKey);
+
+		$("#h5-key").text("Current key = "+selectedKey);
+		$("#output").val(plaintext);
+	}
+
 	$(document).ready(function(){
 
 		$("#btn-enc").prop("disabled", false);
+
+		$(document).on("click","table.grid td", function(){
+			var thisClass = $(this).attr("class");
+			$("td."+thisClass).removeClass("selected");
+			$(this).addClass("selected");
+
+			updateCrack();
+		})
 
 		$("#btn-crack").click(function(){
 			if(!$(this).hasClass("active")){
@@ -110,6 +149,21 @@
 		})
 	})
 </script>
+
+<style type="text/css">
+	table.grid td {
+		cursor: pointer;
+	}
+
+	table.grid td:hover {
+		background-color: #e0e0e0;
+	}
+
+	table.grid td.selected {
+		font-weight: bold;
+		background-color: #bdbdbd;
+	}
+</style>
 
 <body>
 	<div class="header">
@@ -241,8 +295,15 @@
 		<h5>Output :</h5>
 		<div id="div-crack" class="hide">
 			<h5 id="h5-key-length"></h5>
+			<h5>All possible keys : </h5>
+			<div id="div-keys-table">
+				<table class="grid keys">
+					<tr id="tr-row-1"></tr>
+					<tr id="tr-row-2"></tr>
+					<tr id="tr-row-3"></tr>
+				</table>
+			</div>
 			<h5 id="h5-key"></h5>
-			<h5 id="h5-other-key"></h5>
 		</div>
 		<div class="clear"></div>
 		<textarea id="output" readonly></textarea>
