@@ -174,7 +174,6 @@ function detectClassicCipher(text){
 
 	if(substitutionCipher){
 		possibleCipher.push("Monoalphabetic Substitution");
-		cipherAlgo.push("Simple Substitution Cipher");
 		cipherAlgo.push("Caesar Cipher");
 		cipherAlgo.push("Affine Cipher");
 		cipherAlgo.push("Atbash Cipher");
