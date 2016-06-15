@@ -1,5 +1,5 @@
 /*******************************************	
-*	Enigmator v0.1.0
+*	Enigmator v0.1.5
 *	Written by : Merricx
 *
 /********************************************/
@@ -425,6 +425,9 @@ var Enigmator = {
 	blowfish: {
 		enc: function(text, key, iv, cipherMode){
 
+			if(iv == undefined)
+				iv = 0;
+
 			if(cipherMode == "CBC")
 				var mode = 1;
 			else if(cipherMode == "ECB")
@@ -444,6 +447,9 @@ var Enigmator = {
 		},
 
 		dec: function(text, key, iv, cipherMode){
+
+			if(iv == undefined)
+				iv = 0;
 
 			if(cipherMode == "CBC")
 				var mode = 1;
@@ -838,42 +844,59 @@ var Enigmator = {
 
 		enc: function(text, key){
 
+			key = key.replace(/[^A-Z]/gi, "");
+
 			if(!key){
 				return text;
 			}
-			var plainChar, shiftAmount, cipherChars;
 
-            text = text.replace(/\s+/g, "").toUpperCase();
-            key = key.replace(/\s+/g, "").toUpperCase().split("");
+			var character, ciphertext, shift;
+			var alpha = "abcdefghijklmnopqrstuvwxyz";
 
-            cipherChars = [];
-            for (var i = 0; plainChar = text[i]; ++i) {
-                shiftAmount = key[0].charCodeAt(0) - 'A'.charCodeAt(0);
-                cipherChars.push(Enigmator.caesar(plainChar, shiftAmount));
-                key.push(key.shift());
+			key = key.toLowerCase().split("");
+
+            ciphertext = "";
+            for (var i = 0; i < text.length; i++) {
+            	character = text.charAt(i);
+            	if(/[A-Z]/gi.test(character)){
+            		shift = alpha.indexOf(key[0]);
+            		ciphertext += Enigmator.caesar(character, shift);
+            		key.push(key.shift());
+            	}
+            	else {
+            		ciphertext += character;
+            	}
             }
 
-            return cipherChars.join('');
+            return ciphertext;
 		},
 
 		dec: function(text, key){
 
+			key = key.replace(/[^A-Z]/gi, "");
+
 			if(!key){
 				return text;
 			}
-			 var i, cipherChar, shiftAmount, plainChars;
+			var character, plaintext, shift;
+			var alpha = "abcdefghijklmnopqrstuvwxyz";
 
-            text = text.replace(/\s+/g, "").toUpperCase();
-            key = key.replace(/\s+/g, "").toUpperCase().split("");
-            
-            plainChars = [];
-            for (i = 0; cipherChar = text[i]; ++i) {
-                shiftAmount = key[0].charCodeAt(0) - 'A'.charCodeAt(0);
-                plainChars.push(Enigmator.caesar(cipherChar, 26-shiftAmount));
-                key.push(key.shift());
+			key = key.toLowerCase().split("");
+
+            plaintext = "";
+            for (var i = 0; i < text.length; i++) {
+            	character = text.charAt(i);
+            	if(/[A-Z]/gi.test(character)){
+            		shift = alpha.indexOf(key[0]);
+					plaintext += Enigmator.caesar(character, 26-shift);
+					key.push(key.shift());
+            	}
+            	else {
+            		plaintext += character;
+            	}
             }
 
-            return plainChars.join('');
+            return plaintext;
 		},
 
 		crack: {
@@ -938,7 +961,7 @@ var Enigmator = {
 						possibleKey[i].push(alpha.charAt(chiSquared[j][0]));
 					}
 				}
-
+				console.log(possibleKey);
 				return possibleKey;
 
 			}
@@ -1001,12 +1024,12 @@ var Enigmator = {
 
 		enc: function(text, key){
 
-			text = text.toUpperCase().replace(/[^A-Z]/g, "");
+			textNoSpace = text.toUpperCase().replace(/[^A-Z]/g, "");
 			key = key.toUpperCase().replace(/[^A-Z]/g, "");
 
 			var result = "";
-			for(i=0; i<text.length; i++){ 
-				if(key.length < text.length)
+			for(i=0; i<textNoSpace.length; i++){ 
+				if(key.length < textNoSpace.length)
         			key += key.charAt(i);
     		}
 
@@ -1374,6 +1397,9 @@ var Enigmator = {
 			square = square.match(reg);
 			row = row.match(reg);
 			col = col.match(reg);
+			console.log(square);
+			console.log(row);
+			console.log(col);
 
 			for(var i=0; i < square.length; i++){
 				sequence += square[i] + row[i] + col[i];
@@ -1571,7 +1597,7 @@ var Enigmator = {
 		},
 
 		generateTable: function(key, omitChar){
-
+			
 			key = key.toUpperCase().replace(/[^A-Z]/g, "");
 			var alphabet =  key+"ABCDEFGHIJKLMNOPQRSTUVWXYZ";
 
@@ -1590,6 +1616,90 @@ var Enigmator = {
 			}
 			
 			return table.join("");
+		},
+
+		randomKey: function(omitChar){
+
+			omitChar = omitChar || "J";
+
+			var regOmit = new RegExp("["+omitChar+"]","g");
+
+			var alpha = "ABCDEFGHIJKLMNOPQRSTUVWXYZ".replace(regOmit, "");
+    		var chars = alpha.split("");
+
+    		result = "";
+    		len = alpha.length;
+    		for(var i=0; i<len; i++){
+        		index = Math.floor(chars.length*Math.random());
+        		result += chars[index];
+        		chars.splice(index,1);
+			}
+			return result;
+		},
+
+		//Coming soon, under development
+		crack: function(text, omitChar){
+
+			omitChar = omitChar || "J";
+
+			var regOmit = new RegExp("["+omitChar+"]","g");
+			text = text.toUpperCase().replace(/[^A-Z]/g, "").replace(regOmit, "");
+
+			var len = text.length;
+			var TEMP = 20;//10 + 0.087 * (len - 84);
+			var e = 1/2.178;
+			var STEP = 0.2;
+			var dF = 0;
+
+			var parentKey = Enigmator.playfair.randomKey(omitChar);
+			var childKey = "";
+
+			for(var T=TEMP; T >= 0; T -= STEP){
+				for(var i=0; i < 10000; i++){
+					var parentScore = Enigmator.cryptanalysis.scoreText(Enigmator.playfair.dec(text, parentKey, omitChar));
+					var randNum = Math.floor(51 * Math.random());
+					console.log(parentScore);
+					switch(randNum){
+						case 0:
+							//Reverse the key
+							childKey = parentKey.split("").reverse().join("");
+							break;
+						case 1:
+							//flip top to bottom
+							childKey = flipTopBottom(parentKey);
+							break;
+						case 2:
+							//flip left to right
+							childKey = flipLeftRight(parentKey);
+							break;
+						case 3:
+							//swap 2 rows, chosen at random
+							childKey = swap2Rows(parentKey);
+							break;
+						case 4:
+							//swap 2 columns, at random
+							childKey = swap2Cols(parentKey);
+							break;
+						default:
+							//swap two letters at random
+							childKey = swap2Letters(parentKey);
+					}
+
+					childScore = Enigmator.cryptanalysis.scoreText(Enigmator.playfair.dec(text, childKey, omitChar));
+					dF = parentScore - childScore;
+					if(dF < 0){
+						parentKey = childKey;
+					}
+					else if(dF > 0){
+						var prob = e^(dF/T);
+						if(prob > (1.0*Math.random())){
+							parentKey = childKey;
+						}
+					}
+				}
+			}
+			return parentKey;
+
 		}
 	},
 
@@ -2036,6 +2146,36 @@ var Enigmator = {
 			return result;
 		},
 
+		/*----------------------------
+		Calculate "how similar text is to English" (Fitness Measure)
+		With Quadgram Statistics
+		(Imported from C implementation of practicalcryptography.com)
+
+		Required :
+		-	lib/qgr.js
+		--------------------------------*/
+
+		scoreText: function(text){
+
+			text = text.replace(/[^A-Z]/gi, "").toUpperCase();
+
+			var len = text.length;
+			var alpha = "ABCDEFGHIJKLMNOPQRSTUVWXYZ";
+			var temp = [];
+			var score = 0;
+
+			for(var i=0; i < len-3; i++){
+				temp[0] = alpha.indexOf(text.charAt(i));
+				temp[1] = alpha.indexOf(text.charAt(i+1));
+				temp[2] = alpha.indexOf(text.charAt(i+2));
+				temp[3] = alpha.indexOf(text.charAt(i+3));
+				score += qgram[17576*temp[0] + 676*temp[1] + 26*temp[2] + temp[3]];
+			}
+
+			return score;
+
+		},
+
 		stringConvert: {
 
 			/*--------------------------------------------
@@ -2111,7 +2251,7 @@ var Enigmator = {
 		}
 	},
 
-	version: "0.1.0"
+	version: "0.1.5"
 };
 
 /*********************************************
@@ -2165,4 +2305,74 @@ function getIndexOf(array, c){
 			return [i, index];
 		}
 	}
+}
+
+function swap2Letters(key){
+	
+	key = key.split("");
+
+	var i = Math.floor(25*Math.random());
+	var j = Math.floor(25*Math.random());
+	var temp = key[i];
+	key[i] = key[j];
+	key[j] = temp;
+
+	return key.join("");
+}
+
+function swap2Rows(key){
+
+	key = key.split("");
+
+	var i = Math.floor(5*Math.random());
+	var j = Math.floor(5*Math.random());
+	for(var k=0; k < 5; k++){
+		var temp = key[i*5 + k];
+		key[i*5 + k] = key[j*5 + k];
+		key[j*5 + k] = temp;
+	}
+
+	return key.join("");
+}
+
+function swap2Cols(key){
+
+	key = key.split("");
+
+	var i = Math.floor(5*Math.random());
+	var j = Math.floor(5*Math.random());
+	for(var k=0; k < 5; k++){
+		var temp = key[k*5 + i];
+		key[k*5 + i] = key[k*5 + j];
+		key[k*5 + j] = temp;
+	}
+
+	return key.join("");
+}
+
+function flipTopBottom(key){
+
+	var oldKey = key.split("");
+	var newKey = key.split("");
+
+	for(k=0;k<5;k++)
+		for(j=0;j<5;j++)
+			newKey[k*5 + j] = oldKey[(4-k)*5+j];
+
+	newKey[25] = "";
+	return newKey.join("");
+}
+
+function flipLeftRight(key){
+
+	var oldKey = key.split("");
+	var newKey = key.split("");
+
+	for(k=0;k<5;k++)
+		for(j=0;j<5;j++)
+			newKey[j*5 + k] = oldKey[(4-j)*5+k];
+
+	newKey[25] = "";
+	return newKey.join("");
+
 }
