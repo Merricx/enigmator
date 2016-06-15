@@ -34,8 +34,12 @@
 		var key2 = $("#key-2").val();
 		var iv = $("#iv").val();
 		var element = "";
-		if(!iv || $("#div-iv").css("display") == "none")
-			var iv = "0";
+		if(!iv)
+			iv = "0";
+		if($("#div-iv").css("display") == "none"){
+			iv = undefined;
+			keyAES = key;
+		}
 
 
 		if(mode == "modern"){
