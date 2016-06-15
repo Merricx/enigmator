@@ -37,6 +37,26 @@
 		}
 	}
 
+	function generateGrid(key){
+		key = key.toUpperCase().replace(/[^A-Z0-9]/g, "");
+		var alphabet =  key+"ABCDEFGHIJKLMNOPQRSTUVWXYZ0123456789";
+
+		var grid = [];
+		var character;
+		var index = 0;
+		for(var i=0; i < alphabet.length; i++){
+			character = alphabet.charAt(i);
+			if(grid.indexOf(character) == -1){
+				grid[index] = character;
+				index++;
+			}
+		}
+		grid = grid.join("");
+			
+		loadGrid(grid);
+		$("#grid").val(grid);
+	}
+
 	function clearGrid(){
 		var adfgvx = "ADFGVX";
 		for(var i=1; i <= 6;i++){
@@ -47,6 +67,7 @@
 
 	$(document).ready(function(){
 		loadGrid($("#grid").val());
+		$("#grid").prop("disabled", false);
 		$("#btn-enc").prop("disabled", false);
 
 		$("#grid").bind("change keyup keydown", function(){
@@ -65,13 +86,34 @@
 			}
 		})
 
+		$("#btn-use-keyword").click(function(){
+			if(!$(this).hasClass("active")){
+				$("#div-keyword").show();
+				$("#grid").prop("disabled", true);
+				$(this).addClass("active");
+				$("#keyword").focus();
+			}
+			else
+			{
+				$("#div-keyword").hide();
+				$("#grid").prop("disabled", false);
+				$(this).removeClass("active");
+			}
+		})
+
+		$("#keyword").bind("change keyup keydown", function(){
+			generateGrid($(this).val());
+		})
+
 		$("#btn-clear").click(function(){
-			loadGrid("");
+			loadGrid("ABCDEFGHIJKLMNOPQRSTUVWXYZ0123456789");
+			$("#grid").val("ABCDEFGHIJKLMNOPQRSTUVWXYZ0123456789");
 		})
 
 		$("#btn-generate").click(function(){
 			var str = method.generateKey();
 			$("#grid").val(str);
+			$("#keyword").val(str);
 			loadGrid(str);
 		})
 	})
@@ -195,11 +237,18 @@
 		<textarea id="input" autofocus spellcheck="false"></textarea>
 		<div class="clear"></div>
 		<div id="div-grid">
+			<div id="div-keyword" class="hide">
+				<h5>Keyword :</h5>
+				<input type="text" id="keyword" maxlength="36">
+				<div class="clear"></div>
+			</div>
+
 			<h5>Grid :</h5>
 			<input type="text" id="grid" value="ABCDEFGHIJKLMNOPQRSTUVWXYZ0123456789" maxlength="36">
 			<div class="clear"></div>
 			<button id="btn-preview" class="left grey">Preview</button>
 			<button id="btn-generate" class="left grey">Random Grid</button>
+			<button id="btn-use-keyword" class="left grey">Use Keyword</button>
 			<div class="clear"></div>
 			<table class="grid hide">
 				<tr>
