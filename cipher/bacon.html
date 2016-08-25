@@ -18,12 +18,47 @@
 
 	execute = function(methodType){
 		var input = $("#input").val();
-		var str = methodType(input);
+		if($("#btn-version span").text() == "Standard")
+			var version = 1
+		else
+			var version = 2;
+
+		if($("#btn-swap-ab").hasClass("active") && methodType === method.dec){
+			var input = swapAB(input);
+		}
+
+		var str = methodType(input, version);
+		if($("#btn-swap-ab").hasClass("active") && methodType === method.enc){
+			var str = swapAB(str);
+		}
 		$("#output").val(str);
+	}
+
+	function swapAB(text){
+		
+		var result = "";
+		for(var i=0; i < text.length; i++){
+			var character = text.charAt(i);
+			if(character == "A")
+				character = "B";
+			else if(character == "B")
+				character = "A";
+			result += character;
+		}
+		
+		return result;
 	}
 
 	$(document).ready(function(){
 		
+		$("#btn-swap-ab").click(function(){
+			if(!$(this).hasClass("active")){
+				$(this).addClass("active");
+			}
+			else {
+				$(this).removeClass("active");
+			}
+		})
 	})
 </script>
 
@@ -142,9 +177,18 @@
 
 		<h5>Input :</h5>
 		<textarea id="input" autofocus spellcheck="false"></textarea>
-		<h6><i>Note : <b>I=J</b> and <b>U=V</b></i></h6>
+		<div class="clear"></div>
+		<h6><i>Note : Standard Version (<b>I=J</b> and <b>U=V</b>)</i></h6>
 		<button id="btn-enc" class="red left">Encrypt</button>
 		<button id="btn-dec" class="blue left">Decrypt</button>
+		<button id="btn-swap-ab" class="grey left">Swap A and B</button>
+		<div id="btn-version" class="select left">
+			<button class="grey">Version : <span>Standard</span></button>
+			<ul class="option">
+				<li>Standard</li>
+				<li>Second Version</li>
+			</ul>
+		</div>
 		<div class="clear"></div>
 		<h5>Output :</h5>
 		<textarea id="output" readonly></textarea>

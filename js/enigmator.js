@@ -957,7 +957,7 @@ var Enigmator = {
 					}
 					chiSquared.sort(function(a, b){ return a[1] - b[1]});
 					possibleKey[i] = [];
-					for(var j=0; j < 3; j++){
+					for(var j=0; j < 5; j++){
 						possibleKey[i].push(alpha.charAt(chiSquared[j][0]));
 					}
 				}
@@ -1229,12 +1229,22 @@ var Enigmator = {
 		Baconian Cipher
 	-----------------------------------------------*/
 	baconian: {
-		enc: function(text){
+		enc: function(text, version){
+
+			version = version || 1;
 
 			var alphabet = "ABCDEFGHIJKLMNOPQRSTUVWXYZ";
-			var bacon = ["AAAAA","AAAAB","AAABA","AAABB","AABAA","AABAB","AABBA","AABBB","ABAAA","ABAAA",
+			var bacon1 = ["AAAAA","AAAAB","AAABA","AAABB","AABAA","AABAB","AABBA","AABBB","ABAAA","ABAAA",
 			"ABAAB","ABABA","ABABB","ABBAA","ABBAB","ABBBA","ABBBB","BAAAA","BAAAB","BAABA",
 			"BAABB","BAABB","BABAA","BABAB","BABBA","BABBB"];
+			var bacon2 = ["AAAAA","AAAAB","AAABA","AAABB","AABAA","AABAB","AABBA","AABBB","ABAAA","ABAAB",
+			"ABABA","ABABB","ABBAA","ABBAB","ABBBA","ABBBB","BAAAA","BAAAB","BAABA","BAABB",
+			"BABAA","BABAB","BABBA","BABBB","BBAAA","BBAAB"];
+
+			if(version == 1)
+				var bacon = bacon1;
+			else
+				var bacon = bacon2;
 
 			text = text.toUpperCase().replace(/[^A-Z]/g, "");
 			var len = text.length;
@@ -1250,11 +1260,22 @@ var Enigmator = {
 			return result.match(/.{1,5}/g).join(" ");
 		},
 
-		dec: function(text){
+		dec: function(text, version){
+
+			version = version || 1;
+
 			var alphabet = "ABCDEFGHIJKLMNOPQRSTUVWXYZ";
-			var bacon = ["AAAAA","AAAAB","AAABA","AAABB","AABAA","AABAB","AABBA","AABBB","ABAAA","ABAAA",
+			var bacon1 = ["AAAAA","AAAAB","AAABA","AAABB","AABAA","AABAB","AABBA","AABBB","ABAAA","ABAAA",
 			"ABAAB","ABABA","ABABB","ABBAA","ABBAB","ABBBA","ABBBB","BAAAA","BAAAB","BAABA",
 			"BAABB","BAABB","BABAA","BABAB","BABBA","BABBB"];
+			var bacon2 = ["AAAAA","AAAAB","AAABA","AAABB","AABAA","AABAB","AABBA","AABBB","ABAAA","ABAAB",
+			"ABABA","ABABB","ABBAA","ABBAB","ABBBA","ABBBB","BAAAA","BAAAB","BAABA","BAABB",
+			"BABAA","BABAB","BABBA","BABBB","BBAAA","BBAAB"];
+
+			if(version == 1)
+				var bacon = bacon1;
+			else
+				var bacon = bacon2;
 
 			text = text.toUpperCase().replace(/[^AB]/g, "").match(/.{1,5}/g);
 			var len = text.length;
