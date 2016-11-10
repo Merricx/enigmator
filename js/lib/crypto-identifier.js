@@ -62,8 +62,14 @@ function detectHash(hash){
 		else if(len == 56){
 			possibleHashType = ["SHA-224","SHA-3 (Keccak-224)"];
 		}
+		else if(len == 60){
+			possibleHashType = ["Oracle11"];
+		}
 		else if(len == 64){
 			possibleHashType = ["SHA-256","SHA-3 (Keccak-256)","BLAKE-256","GOST","HAVAL-256","SNEFRU"];
+		}
+		else if(len == 70){
+			possibleHashType = ["hMailServer"];
 		}
 		else if(len == 80){
 			possibleHashType = ["RIPEMD-320"];
@@ -95,6 +101,9 @@ function detectHash(hash){
 	}
 	else if(/^\$episerver\$\*0\*/gi.test(hash)){
 		possibleHashType = ["Episerver"];
+	}
+	else if(/^[a-f0-9]{32}:[a-zA-Z0-9]{31}$/g.test(hash)){
+		possibleHashType = ["Joomla"];
 	}
 	else if(/^\$(?:2y|2a)\$[0-9]{2}\$[a-zA-Z0-9\/\.]{53}$/g.test(hash)){
 		possibleHashType = ["bcrypt()"];
@@ -131,6 +140,30 @@ function detectHash(hash){
 	}
 	else if(/^\$ml\$/gi.test(hash)){
 		possibleHashType = ["OS X v10.8 / v10.9"];
+	}
+	else if(/^:B:[a-f0-9]{8}:[a-f0-9]{32}$/g.test(hash)){
+		possibleHashType = ["MediaWiki B type"];
+	}
+	else if(/^:A:[a-f0-9]{32}$/g.test(hash)){
+		possibleHashType = ["MediaWiki A type"];
+	}
+	else if(/^\$K4\$/g.test(hash)){
+		possibleHashType = ["Kerberos AFS"];
+	}
+	else if(/^\$af\$/g.test(hash)){
+		possibleHashType = ["Kerberos v4"];
+	}
+	else if(/^\$krb5\$/g.test(hash)){
+		possibleHashType = ["Kerberos v5"];
+	}
+	else if(/^\$mskrb5\$/g.test(hash)){
+		possibleHashType = ["MS Kerberos 5"];
+	}
+	else if(/^\+[a-zA-Z0-9\/\.]{12}$/g.test(hash)){
+		possibleHashType = ["Eggdrop"];
+	}
+	else if(/^\$IPB2\$/g.test(hash)){
+		possibleHashType = ["IPB2"];
 	}
 	
 	//NEW HASH
@@ -241,11 +274,12 @@ function detectClassicCipher(text){
 function detectUniqueCipher(text){
 
 	var possibleCipher = [];
+	var textNoSpace = text.replace(/\s+/g, "");
 
-	if(/^[\.\-\/\|\s]+$/g.test(text)){
+	if(/^[\.\-\/\|]+$/g.test(textNoSpace)){
 		possibleCipher.push("Morse Code");
 	}
-	if(/^[ADFGVX\s]+$/gi.test(text)){
+	if(/^[ADFGVX]+$/gi.test(textNoSpace)){
 		possibleCipher.push("ADFGVX Cipher");
 	}
 	if(/^(?:[AB]{5})+$/gi.test(text.replace(/\s+/g, ""))){
@@ -275,7 +309,7 @@ function detectEncoding(text){
 	if(/^begin\s[0-9]+\s(?:[\x21-\x7e\n]+)`\send/gi.test(text) || /^[\x21-\x7e]+\n*\n`/g.test(text)){
 		possibleEnc.push("UUencode");
 	}
-	if(/^begin\s[0-9]+\s[\w\x21-\x7e](?:[a-z0-9\-\+\n]+)\+\send/gi.test(text) || /^[a-z0-9\-\+\s]+\s\+/gi.test(text)){
+	if(/^begin\s[0-9]+\s[\w\x21-\x7e](?:[a-z0-9\-\+\n]+)\+\send/gi.test(text)/* || /^[a-z0-9\-\+\s]+\s\+/gi.test(text)*/){
 		possibleEnc.push("XXencode");
 	}
 	if(/^\=ybegin[\u0000-\uffff]+\=yend/gi.test(text)){
@@ -309,21 +343,79 @@ function detectEncoding(text){
 	if(/^[\x21-\x7e]+=~\[\];[\x21-\x7e]+\"\\\"\"\)\(\)\)\(\);$/.test(text)){
 		possibleEnc.push("JJencode");
 	}
-	if(/^[\(\)\+\[\]\!]+$/gi.test(text)){
-		possibleEnc.push("JSF*ck");
-	}
 	if(/^(?:(?:[bcdfghklmnprstvzx][aeiouy-]){3})+(?:(?:[bcdfghklmnprstvzx][aeiouy]){2})+[bcdfghklmnprstvzx]$/gi.test(textNoSpace)){
 		possibleEnc.push("Bubble-Babble");
 	}
+	if(/^[-1]+$/g.test(textNoSpace)){
+		possibleEnc.push("Spirit DVD Code");
+	}
+
+	//Esoteric Programming Language
+	if(/^[\<\>\+\-\.\,\[\]]+$/g.test(textNoSpace)){
+		possibleEnc.push("Brainfuck");
+	}
+	if(/^[aceijops]+$/g.test(text)){
+		possibleEnc.push("Alphuck");
+	}
+	if(/^[\(\)\+\[\]\!]+$/gi.test(text)){
+		possibleEnc.push("JSFuck");
+	}
+	if(/^(?:Ook[\.\?\!])+$/g.test(textNoSpace)){
+		possibleEnc.push("Ook!");
+	}
+	if(/^[\.\?\!]+$/g.test(textNoSpace)){
+		possibleEnc.push("Short Ook!");
+	}
+	if(/^([0-9]+[\+\-\*\/\%\!\`\>\<\^v\?\_\|\"\:\;\\\$\.\,\#gp\&\~\@]+|[\+\-\*\/\%\!\`\>\<\^v\?\_\|\"\:\;\\\$\.\,\#gp\&\~\@]+[0-9]*)$/g.test(textNoSpace.replace(/(?:\".+\")+/, "")) && /^@$/g.test(text.replace(/[^@]+/g, ""))){
+		possibleEnc.push("Befunge");
+	}
+	if(/^[FBICRSEOQ\,\:\;\+\-0-9]+$/g.test(textNoSpace) && /,(?=[0-9])/g.test(textNoSpace)){
+		possibleEnc.push("NVSPL2");
+	}
+	if(/^HAI.+KTHXBYE$/g.test(textNoSpace)){
+		possibleEnc.push("LOLCODE");
+	}
+	if(/^[\x20\t\n\x0d]{10,}$/g.test(text)){
+		possibleEnc.push("Whitespace (Esolang)");
+	}
+	if(/^['\(\<BQbcu]+[\&\'\=APabt]+/g.test(textNoSpace)){
+		possibleEnc.push("Malbolge");
+	}
+
+	//Detect any File Compression
+	if(/^\x1f\x8b/gi.test(text)){
+		possibleEnc.push("gz compressed");
+	}
+	if(/^\x42\x5a\x68/gi.test(text)){
+		possibleEnc.push("bz2 compressed");
+	}
+	if(/^\x1f(?:\x9d|\xa0)/gi.test(text)){
+		possibleEnc.push("zlib compressed");
+	}
+
+	//Some secret and silly encoding (I'm not sure if these are called Encoding :D)
+	if(/^(?:r[0-9A-F]{2}|\+[0-9A-F]{2}|u[0-9A-F]{2}|\-[0-9A-F]{2}|d[0-9A-F]{2})+$/gi.test(textNoSpace)){
+		possibleEnc.push("HID Keyboard log");
+	}
+	if(/^Dear(?:Friend|E-Commerceprofessional|Businessperson|Professional|Cybercitizen|Colleague|DecisionMaker|Salaryman|WebSurfer|SirorMadam).+Senatebill.+Title.+Section/gi.test(textNoSpace)){
+		possibleEnc.push("Spammimic");
+	}
+	if(/^[02-9]$/.test(textNoSpace) && !/0{2,}|[2345678]{4,}|9{5,}/.test(text) && (/33/.test(text) || /666/.test(text) || /444/.test(text))){
+		possibleEnc.push("T9");
+	}
+
 
 	//Detect for any possible Base-family
-	if(/^[01\s]+$/g.test(textNoSpace)){
+	if(/^[01]+$/g.test(textNoSpace)){
+		if(textNoSpace.length % 5 == 0){
+			possibleEnc.push("Baudot Code");
+		}
 		possibleEnc.push("Base2 (Binary)");
 	}
-	else if(/^[0-7\s]+$/g.test(textNoSpace)){
+	else if(/^[0-7]+$/g.test(textNoSpace)){
 		possibleEnc.push("Base8 (Octal)");
 	}
-	else if(/^[0-9\s]+$/g.test(textNoSpace)){
+	else if(/^[0-9]+$/g.test(textNoSpace)){
 		possibleEnc.push("Base10 (Decimal)");
 	}
 	else if(/^(?:0x[0-9a-f]+|[0-9a-f]+)$/gi.test(textNoSpace) || /^(?:(\\|0)x[0-9a-f]{2}|(\\|0)u[0-9a-f]{4})+$/gi.test(textNoSpace)){
