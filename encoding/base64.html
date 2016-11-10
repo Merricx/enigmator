@@ -19,50 +19,38 @@
 	method = Enigmator.base64;
 
 	execute = function(methodType){
-		if(!$("#btn-encodeFile").hasClass("active") && !$("#btn-decodeFile").hasClass("active"))
-		{
-			var input = $("#input").val();
+		if(!$("#btn-input-file").hasClass("active")){
+			input = $("#input").val();
 			var str = methodType(input);
-			$("#output").val(str);
-		}
-		else
-		{
-			if(methodType === method.enc)
-			{
-				fileEncode();
-			}
-			else if(methodType === method.dec)
-			{
-				var input = $("#input").val();
+			if(methodType == method.dec && $("#btn-decodeFile").hasClass("active"))
 				window.location = "data:application/octet-stream;base64,"+input;
-			}
+			else
+				$("#output").val(str);
+		}
+		else {
+			readFile(file, function(e){
+				input = arrayBufferToStr(e.target.result);
+				var str = methodType(input);
+				if(methodType == method.dec && $("#btn-decodeFile").hasClass("active"))
+					window.location = "data:application/octet-stream;base64,"+btoa(str);
+				else
+					$("#output").val(str);
+			});
 		}
 	}
 
 	$(document).ready(function(){
 
 		$("#btn-enc").prop("disabled",false);
-		$("#btn-dec").prop("disabled",false);
 
-		$("#btn-encodeFile").click(function(){
-			if(!$(this).hasClass("active"))
-			{
-				$("#input").hide();
-				$(".input-upload").show();
-				$("#btn-dec").prop("disabled",true);
-				$(this).addClass("active");
+		$("#btn-input-file").click(function(){
+			$("#div-input-upload").show();
+			$("#input").hide();
+		})
 
-				if($("#btn-decodeFile").hasClass("active")){
-					$("#btn-decodeFile").trigger("click");
-				}
-			}
-			else
-			{
-				$("#input").show();
-				$(".input-upload").hide();
-				$("#btn-dec").prop("disabled",false);
-				$(this).removeClass("active");
-			}
+		$("#btn-input-raw").click(function(){
+			$("#div-input-upload").hide();
+			$("#input").show();
 		})
 
 		$("#btn-decodeFile").click(function(){
@@ -70,10 +58,6 @@
 				$(this).addClass("active");
 				$("#btn-enc").prop("disabled",true);
 				$("#btn-dec").text("Decode and Download");
-
-				if($("#btn-encodeFile").hasClass("active")){
-					$("#btn-encodeFile").trigger("click");
-				}
 			}
 			else{
 				$(this).removeClass("active");
@@ -198,11 +182,16 @@
 
 		<div class="clear"></div>
 
-		<h5>Input :</h5>
+		<h5 class="left">Input :</h5>
+		<div class="toggle-button">
+			<button id="btn-input-raw" class="grey active small">Text</button>
+			<button id="btn-input-file" class="grey small">File</button>
+		</div>
+		<div class="clear"></div>
 		<textarea id="input" autofocus spellcheck="false"></textarea>
-		<input type="file" id="encodeFromFile" class="hide">
-		<div class="input-upload hide">
-			<label for="encodeFromFile" class="button blue large">
+		<input type="file" id="inputFile" class="hide">
+		<div class="input-upload hide" id="div-input-upload">
+			<label for="inputFile" class="button blue large">
 				Select File
 			</label>
 			<h5>No file selected</h5>
@@ -210,13 +199,12 @@
 
 		<button id="btn-enc" class="red left">Encode</button>
 		<button id="btn-dec" class="blue left">Decode</button>
-		<button id="btn-encodeFile" class="grey right opt">Encode from File</button>
+		<button id="btn-decodeFile" class="grey right opt">Decode as File</button>
 		<div class="clear"></div>
 
 		<h5>Output :</h5>
 		<textarea id="output" readonly></textarea>
 		<button id="btn-clear" class="grey left large">Clear</button>
-		<button id="btn-decodeFile" class="grey right opt">Decode as File</button>
 	</div></center>
 	</div>
 </body>

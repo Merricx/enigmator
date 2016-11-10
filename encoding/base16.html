@@ -15,6 +15,33 @@
 <script type="text/javascript" src="../js/main.js"></script>
 <script type="text/javascript">
 	method = Enigmator.base16;
+
+	$(document).ready(function(){
+		$("#btn-enc").prop("disabled",false);
+
+		$("#btn-input-file").click(function(){
+			$("#div-input-upload").show();
+			$("#input").hide();
+		})
+
+		$("#btn-input-raw").click(function(){
+			$("#div-input-upload").hide();
+			$("#input").show();
+		})
+
+		$("#btn-decodeFile").click(function(){
+			if(!$(this).hasClass("active")){
+				$(this).addClass("active");
+				$("#btn-enc").prop("disabled",true);
+				$("#btn-dec").text("Decode and Download");
+			}
+			else{
+				$(this).removeClass("active");
+				$("#btn-enc").prop("disabled",false);
+				$("#btn-dec").text("Decode");
+			}
+		})
+	})
 </script>
 
 <body>
@@ -129,10 +156,23 @@
 			<h2>Base16 (Hexadecimal)</h2>
 		</div>
 
-		<h5>Input :</h5>
+		<h5 class="left">Input :</h5>
+		<div class="toggle-button">
+			<button id="btn-input-raw" class="grey active small">Text</button>
+			<button id="btn-input-file" class="grey small">File</button>
+		</div>
+		<div class="clear"></div>
 		<textarea id="input" autofocus spellcheck="false"></textarea>
+		<input type="file" id="inputFile" class="hide">
+		<div class="input-upload hide" id="div-input-upload">
+			<label for="inputFile" class="button blue large">
+				Select File
+			</label>
+			<h5>No file selected</h5>
+		</div>
 		<button id="btn-enc" class="red left">Encode</button>
 		<button id="btn-dec" class="blue left">Decode</button>
+		<button id="btn-decodeFile" class="grey right opt">Decode as File</button>
 		<div class="clear"></div>
 		<h5>Output :</h5>
 		<textarea id="output" readonly></textarea>
