@@ -366,7 +366,7 @@ function detectEncoding(text){
 	if(/^[\.\?\!]+$/g.test(textNoSpace)){
 		possibleEnc.push("Short Ook!");
 	}
-	if(/^([0-9]+[\+\-\*\/\%\!\`\>\<\^v\?\_\|\"\:\;\\\$\.\,\#gp\&\~\@]+|[\+\-\*\/\%\!\`\>\<\^v\?\_\|\"\:\;\\\$\.\,\#gp\&\~\@]+[0-9]*)$/g.test(textNoSpace.replace(/(?:\".+\")+/, "")) && /^@$/g.test(text.replace(/[^@]+/g, ""))){
+	if(/^([0-9]+[\+\-\*\/\%\!\`\>\<\^v\?\_\|\"\:\;\\\$\.\,\#gp\&\~\@]+|[\+\-\*\/\%\!\`\>\<\^v\?\_\|\"\:\;\\\$\.\,\#gp\&\~\@]+[0-9]*)+$/g.test(textNoSpace.replace(/(?:\".+\")+/, "")) && /^@$/g.test(text.replace(/[^@]+/g, ""))){
 		possibleEnc.push("Befunge");
 	}
 	if(/^[FBICRSEOQ\,\:\;\+\-0-9]+$/g.test(textNoSpace) && /,(?=[0-9])/g.test(textNoSpace)){
