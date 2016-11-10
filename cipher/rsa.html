@@ -27,6 +27,9 @@
 		if(!$("#btn-input-file").hasClass("active")){
 			input = $("#input").val();
 		}
+		else {
+			input = Enigmator.base64.enc(input);
+		}
 
 		
 		if(!$("#btn-priv-file").hasClass("active")){
@@ -78,13 +81,12 @@
 			$("#priv-key").val(method.generateKeys("private", keySize));
 		})
 
-		$("#inputFile").bind('change', function() {
-			var inputFile = $("#inputFile")[0].files[0];
+		$("#rsaFile").bind('change', function() {
+			var inputFile = $("#rsaFile")[0].files[0];
 			$("#div-input-upload h5").text(inputFile.name);
 
 			readFile(inputFile, function(e){
 				input = arrayBufferToStr(e.target.result);
-				input = Enigmator.base64.enc(input);
 			});
     	})
     	$("#privKeyFile").bind('change', function() {
@@ -219,7 +221,7 @@
 		</div>
 		<div class="clear"></div>
 		<textarea id="input" autofocus spellcheck="false"></textarea>
-		<input type="file" id="inputFile" class="hide">
+		<input type="file" id="rsaFile" class="hide">
 		<div class="input-upload hide" id="div-input-upload">
 			<label for="inputFile" class="button blue large">
 				Select File
