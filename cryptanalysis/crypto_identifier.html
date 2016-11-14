@@ -17,85 +17,110 @@
 <script type="text/javascript">
 	method = Enigmator.cryptanalysis.identify;
 
+	function displayResult(result, type){
+		var noresult = false;
+
+		if(type == "cipher"){
+				
+			if(result.cipherAlgo !== undefined){
+				var element = "";
+				for(var i=0; i < result.cipherAlgo.length; i++){
+					element += "<li>"+result.cipherAlgo[i]+"</li>";
+				}
+				$("#cipher-type span").text(result.possibleCipher);
+				$("#cipher-type").show();
+				$("#cipher-algo h5").text("Most Common Ciphers : ");
+				$("#cipher-algo ul").html(element);
+			}
+			else {
+				var element = "";
+				for(var i=0; i < result.possibleCipher.length; i++){
+					element += "<li>"+result.possibleCipher[i]+"</li>";
+				}
+				$("#cipher-type").hide();
+				$("#cipher-algo h5").text("Possible Cipher : ");
+				$("#cipher-algo ul").html(element);
+			}
+			if(result.possibleCipher.length < 1)
+				noresult = true;
+			if(result.ic !== undefined){
+				$("#cipher-ic").show();
+				$("#cipher-ic span").text(result.ic);
+				$("#div-cipher h6").show();
+			}
+			else {
+				$("#cipher-ic").hide();
+				$("#div-cipher h6").hide();
+			}
+		}
+		else if(type == "encoding"){
+			var element = "";
+			for(var i=0; i < result.possibleEnc.length; i++){
+				element += "<li>"+result.possibleEnc[i]+"</li>";
+			}
+			$("#encoding-type").html(element);
+			if(result.possibleEnc.length < 1)
+				noresult = true;
+		}
+		else if(type == "hash"){
+			var element = "";
+			for(var i=0; i < result.possibleHash.length; i++){
+				element += "<li>"+result.possibleHash[i]+"</li>";
+			}
+			$("#hash-type").html(element);
+			if(result.possibleHash.length < 1)
+				noresult = true;
+		}
+		$("#div-output").show();
+		$("#output > div").hide();
+		if(noresult){
+			$("#div-noresult").show();
+		}
+		else {
+			$("#div-"+type).show();
+		}
+	}
+
 	$(document).ready(function(){
 
 		$("#btn-identify").click(function(){
 
 			var result = {};
-			var noresult = false;
 			var str = $("#input").val();
 			var type = $("#btn-type button span").text().toLowerCase();
-			if(!str){
-				alert("Please, input text first.");
-				return;
-			}
-			else if(str.length < 20 && type == "cipher"){
-				alert("Input is too short to identify Cipher (min. 20 characters)");
-				return;
-			}
 			
-			result = method(str, type);
-
-			if(type == "cipher"){
-				
-				if(result.cipherAlgo !== undefined){
-					var element = "";
-					for(var i=0; i < result.cipherAlgo.length; i++){
-						element += "<li>"+result.cipherAlgo[i]+"</li>";
-					}
-					$("#cipher-type span").text(result.possibleCipher);
-					$("#cipher-type").show();
-					$("#cipher-algo h5").text("Most Common Algorithm : ");
-					$("#cipher-algo ul").html(element);
+			if(!$("#btn-input-file").hasClass("active")){
+				if(!str){
+					alert("Please, input text first.");
+					return;
 				}
-				else {
-					var element = "";
-					for(var i=0; i < result.possibleCipher.length; i++){
-						element += "<li>"+result.possibleCipher[i]+"</li>";
-					}
-					$("#cipher-type").hide();
-					$("#cipher-algo h5").text("Possible Cipher : ");
-					$("#cipher-algo ul").html(element);
+				else if(str.length < 20 && type == "cipher"){
+					alert("Input is too short to identify Cipher (min. 20 characters)");
+					return;
 				}
-				if(result.possibleCipher.length < 1)
-					noresult = true;
-				if(result.ic !== undefined){
-					$("#cipher-ic").show();
-					$("#cipher-ic span").text(result.ic);
-					$("#div-cipher h6").show();
-				}
-				else {
-					$("#cipher-ic").hide();
-					$("#div-cipher h6").hide();
-				}
-			}
-			else if(type == "encoding"){
-				var element = "";
-				for(var i=0; i < result.possibleEnc.length; i++){
-					element += "<li>"+result.possibleEnc[i]+"</li>";
-				}
-				$("#encoding-type").html(element);
-				if(result.possibleEnc.length < 1)
-					noresult = true;
-			}
-			else if(type == "hash"){
-				var element = "";
-				for(var i=0; i < result.possibleHash.length; i++){
-					element += "<li>"+result.possibleHash[i]+"</li>";
-				}
-				$("#hash-type").html(element);
-				if(result.possibleHash.length < 1)
-					noresult = true;
-			}
-
-			$("#div-output").show();
-			$("#output > div").hide();
-			if(noresult){
-				$("#div-noresult").show();
+				result = method(str, type);
+				displayResult(result, type);
 			}
 			else {
-				$("#div-"+type).show();
+				readFile(file, function(e){
+					input = arrayBufferToStr(e.target.result);
+					result = method(input, type);
+					displayResult(result, type);
+				});
 			}
+			
+
+			
+		})
+
+		$("#btn-input-file").click(function(){
+			$("#div-input-upload").show();
+			$("#input").hide();
+		})
+
+		$("#btn-input-raw").click(function(){
+			$("#div-input-upload").hide();
+			$("#input").show();
 		})
 
 		$("#btn-clear").click(function(){
@@ -243,8 +268,20 @@
 
 		<div class="clear"></div>
 
-		<h5>Input :</h5>
+		<h5 class="left">Input :</h5>
+		<div class="toggle-button">
+			<button id="btn-input-raw" class="grey active small">Text</button>
+			<button id="btn-input-file" class="grey small">File</button>
+		</div>
+		<div class="clear"></div>
 		<textarea id="input" autofocus spellcheck="false" placeholder="Put any cryptic text such as Ciphertext, unknown Encoding, or even Hash"></textarea>
+		<input type="file" id="inputFile" class="hide">
+		<div class="input-upload hide" id="div-input-upload">
+			<label for="inputFile" class="button blue large">
+				Select File
+			</label>
+			<h5>No file selected</h5>
+		</div>
 		<div class="clear"></div>
 		<h6><i>Note : This tool can't identify Modern Cipher</i></h6>
 
@@ -267,7 +304,7 @@
 					<h5 id="cipher-type">Possible Cipher Type : &emsp;<span></span></h5>
 					<h5 id="cipher-ic">Index of Coincidence : &emsp;<span></span></h5>
 					<div id="cipher-algo">
-						<h5>Most Common Algorithm : </h5>
+						<h5>Most Common Ciphers : </h5>
 						<ul></ul>
 					</div>
 					<div class="space"></div>
