@@ -306,10 +306,10 @@ function detectEncoding(text){
 	if(/^[0-9A-Za-z\!#\$%&\(\)\*\+\-\;<=>\?@\^_`\{\}\|~]{20}$/g.test(text)){
 		possibleEnc.push("Base85 (IPv6)");
 	}
-	if(/^begin\s[0-9]+\s(?:[\x21-\x7e\n]+)`\send/gi.test(text) || /^[\x21-\x7e]+\n*\n`/g.test(text)){
+	if(/^begin\s[0-9]+\s(?:[\x21-\x7e\n]+)`\send/gi.test(text) || /^[\x21-\x7e\n]+\n*\n`/g.test(text)){
 		possibleEnc.push("UUencode");
 	}
-	if(/^begin\s[0-9]+\s[\w\x21-\x7e](?:[a-z0-9\-\+\n]+)\+\send/gi.test(text)/* || /^[a-z0-9\-\+\s]+\s\+/gi.test(text)*/){
+	if(/^begin\s[0-9]+\s[\w\x21-\x7e]+(?:[a-z0-9\-\+\n]+)\+\send/gi.test(text)){
 		possibleEnc.push("XXencode");
 	}
 	if(/^\=ybegin[\u0000-\uffff]+\=yend/gi.test(text)){
@@ -346,7 +346,7 @@ function detectEncoding(text){
 	if(/^(?:(?:[bcdfghklmnprstvzx][aeiouy-]){3})+(?:(?:[bcdfghklmnprstvzx][aeiouy]){2})+[bcdfghklmnprstvzx]$/gi.test(textNoSpace)){
 		possibleEnc.push("Bubble-Babble");
 	}
-	if(/^[-1]+$/g.test(textNoSpace)){
+	if(/^[-1]+$/g.test(textNoSpace.replace(/[^a-z0-9\-]+/gi, ""))){
 		possibleEnc.push("Spirit DVD Code");
 	}
 
@@ -400,7 +400,7 @@ function detectEncoding(text){
 	if(/^Dear(?:Friend|E-Commerceprofessional|Businessperson|Professional|Cybercitizen|Colleague|DecisionMaker|Salaryman|WebSurfer|SirorMadam).+Senatebill.+Title.+Section/gi.test(textNoSpace)){
 		possibleEnc.push("Spammimic");
 	}
-	if(/^[02-9]$/.test(textNoSpace) && !/0{2,}|[2345678]{4,}|9{5,}/.test(text) && (/33/.test(text) || /666/.test(text) || /444/.test(text))){
+	if(/^[02-9]+$/.test(textNoSpace) && !/0{2,}|[2345678]{4,}|9{5,}/.test(text) && (/33/.test(text) || /666/.test(text) || /444/.test(text))){
 		possibleEnc.push("T9");
 	}
 
@@ -421,10 +421,10 @@ function detectEncoding(text){
 	else if(/^(?:0x[0-9a-f]+|[0-9a-f]+)$/gi.test(textNoSpace) || /^(?:(\\|0)x[0-9a-f]{2}|(\\|0)u[0-9a-f]{4})+$/gi.test(textNoSpace)){
 		possibleEnc.push("Base16 (Hexadecimal)");
 	}
-	else if(/^[A-Z0-9]*=*$/g.test(text)){
+	else if(/^[A-Z0-9]*=*$/g.test(textNoSpace)){
 		possibleEnc.push("Base32");
 	}
-	else if(/^[A-Z0-9\+\/]*=*$/i.test(text)){
+	else if(/^[A-Z0-9\+\/]*=*$/i.test(textNoSpace)){
 		possibleEnc.push("Base64");
 	}
 	else if(/^[0-9A-Za-z\.\-\:\+=\^\!\/\*\?&<>\(\)\[\]\{\}@%\$#]+$/g.test(text)){
