@@ -1,9 +1,24 @@
 window.method = null;
 
 function execute(methodType){
-	var input = $("#input").val();
-	var str = methodType(input);
-	$("#output").val(str);
+	if(!$("#btn-input-file").hasClass("active")){
+		input = $("#input").val();
+		var str = methodType(input);
+		if(methodType == method.dec && $("#btn-decodeFile").hasClass("active"))
+			window.location = "data:application/octet-stream;base64,"+btoa(str);
+		else
+			$("#output").val(str);
+	}
+	else {
+		readFile(file, function(e){
+			input = arrayBufferToStr(e.target.result);
+			var str = methodType(input);
+			if(methodType == method.dec && $("#btn-decodeFile").hasClass("active"))
+				window.location = "data:application/octet-stream;base64,"+btoa(str);
+			else
+				$("#output").val(str);
+		});
+	}
 }
 
 /*	File Reader for Base64	*/
@@ -219,7 +234,7 @@ $(document).ready(function(){
 		execute(method.dec);
 	})
 
-	var inputFile = $("#encodeFromFile, #checksum");
+	var inputFile = $("#encodeFromFile, #checksum, #inputFile");
 
 	inputFile.bind('change', function() {
 		file = inputFile[0].files[0];
