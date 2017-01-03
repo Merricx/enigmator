@@ -1,0 +1,139 @@
+<!DOCTYPE html PUBLIC "-//W3C//DTD XHTML 1.0 Transitional//EN" "http://www.w3.org/TR/xhtml1/DTD/xhtml1-transitional.dtd">
+<html xmlns="http://www.w3.org/1999/xhtml">
+<head>
+<meta http-equiv="Content-Type" content="text/html; charset=utf-8" />
+<meta name="viewport" content="width=device-width, initial-scale=1.0" />
+<link rel="stylesheet" type="text/css" href="../css/font.css">
+<link rel="stylesheet" type="text/css" href="../css/style.css">
+<link rel="stylesheet" type="text/css" href="../css/jquery-ui.css">
+<link rel="icon" href="../img/icon.png">
+<title>Simple Substitution Cipher - Enigmator</title>
+</head>
+
+<script type="text/javascript" src="../js/jquery.min.js"></script>
+<script type="text/javascript" src="../js/enigmator.js"></script>
+<script type="text/javascript" src="../js/main.js"></script>
+<script type="text/javascript">
+	method = Enigmator.substitution;
+
+	execute = function(methodType){
+		var input = $("#input").val();
+		var key = $("#key").val();
+		var str = methodType(input, key);
+		$("#output").val(str);
+	}
+
+	function loadPattern(key){
+
+		alpha = "ABCDEFGHIJKLMNOPQRSTUVWXYZ";
+		alpha_key = Enigmator.substitution.generateKey(key);
+
+		$("#div-pattern-table").empty();
+		for(var i=0; i < 26; i++){
+			$("#div-pattern-table").append("<table class='grid small left'><tr><td><b>"+alpha.charAt(i)+"</b></td></tr><tr><td>"+alpha_key.charAt(i)+"</td></tr></table>");
+		}
+
+	}
+
+	$(document).ready(function(){
+
+		loadPattern($("#key").val());
+
+		$("#key").bind("change keyup keydown", function(){
+			loadPattern($(this).val());
+		})
+
+		$("#btn-clear").click(function(){
+			loadPattern("");
+		})
+	})
+</script>
+
+<style type="text/css">
+	#div-pattern-table {
+		min-height: 70px;
+		margin: 5px;
+	}
+
+	.main table.grid {
+		margin: 0 -2px -2px 0;
+	}
+
+	.main table.grid tr:first-child {
+		background-color: #f44336;
+		color: #FFF;
+	}
+</style>
+
+<body>
+	<div class="header">
+		<center><a href="../index.html"><img src="../img/title.png"></a></center>
+	</div>
+
+	<div class="menubar noselect">
+	<div class="menu">
+		<ul>
+			<li id="btn-cipher" class="selected"><img src="../img/key.png"></li>
+			<li id="btn-encoding"><img src="../img/encoder.png"></li>
+			<li id="btn-hash"><img src="../img/hash.png"></li>
+			<li id="btn-cryptanalysis"><img src="../img/text.png"></li>
+			<li id="btn-about"><img src="../img/information.png"></li>
+		</ul>
+	</div>
+
+	<div class="sub-menu">
+		<h2 id="sub-menu-title">Cipher</h2>
+		<ul id="menu-encoding" class="hide">
+			
+		</ul>
+
+		<ul id="menu-cipher">
+		</ul>
+
+		<ul id="menu-hash" class="hide">
+			
+		</ul>
+
+		<ul id="menu-cryptanalysis" class="hide">
+			
+		</ul>
+
+		<ul id="menu-about" class="hide">
+			
+		</ul>
+
+	</div>
+	</div>
+
+	<div class="content">
+	<center><div class="main">
+		<div class="title">
+			<h2>Simple Substitution Cipher</h2>
+		</div>
+
+		<div class="clear"></div>
+
+		<h5>Input :</h5>
+		<textarea id="input" autofocus spellcheck="false"></textarea>
+		<h5>Key :</h5>
+		<input type="text" id="key">
+		<div class="clear"></div>
+		<div id="div-pattern">
+			<h5>Substitution Pattern :</h5>
+			<div class="clear"></div>
+			<div id="div-pattern-table">
+			</div>
+		</div>
+		<div class="clear"></div>
+
+		<button id="btn-enc" class="red left">Encrypt</button>
+		<button id="btn-dec" class="blue left">Decrypt</button>
+		<div class="clear"></div>
+
+		<h5>Output :</h5>
+		<textarea id="output" readonly></textarea>
+		<button id="btn-clear" class="grey left large">Clear</button>
+	</div></center>
+	</div>
+</body>
+</html>

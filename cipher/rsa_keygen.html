@@ -1,0 +1,217 @@
+<!DOCTYPE html PUBLIC "-//W3C//DTD XHTML 1.0 Transitional//EN" "http://www.w3.org/TR/xhtml1/DTD/xhtml1-transitional.dtd">
+<html xmlns="http://www.w3.org/1999/xhtml">
+<head>
+<meta http-equiv="Content-Type" content="text/html; charset=utf-8" />
+<meta name="viewport" content="width=device-width, initial-scale=1.0" />
+<link rel="stylesheet" type="text/css" href="../css/font.css">
+<link rel="stylesheet" type="text/css" href="../css/style.css">
+<link rel="stylesheet" type="text/css" href="../css/jquery-ui.css">
+<link rel="icon" href="../img/icon.png">
+<title>RSA (Key Generator) - Enigmator</title>
+</head>
+
+<script type="text/javascript" src="../js/jquery.min.js"></script>
+<script type="text/javascript" src="../js/lib/jsencrypt/jsencrypt.js"></script>
+<script type="text/javascript" src="../js/lib/utils/BigInt.js"></script>
+<script type="text/javascript" src="../js/enigmator.js"></script>
+<script type="text/javascript" src="../js/main.js"></script>
+<script type="text/javascript">
+	method = Enigmator.rsa;
+
+	$(document).ready(function(){
+
+		$("#btn-mode-auto").click(function(){
+			$("#div-auto").show();
+			$("#div-manual").hide();
+		})
+
+		$("#btn-mode-manual").click(function(){
+			$("#div-auto").hide();
+			$("#div-manual").show();
+		})
+
+		$("#btn-auto-generate").click(function(){
+			var keySize = $("#keySize span").text();
+			showLoader();
+			var worker = new Worker("../js/worker/rsa.js");
+			worker.onmessage = function(e){
+				$("#pub-key").val(e.data.pubKey);
+				$("#priv-key").val(e.data.privKey);
+				self.hideLoader();
+			}
+			worker.postMessage(keySize);
+		})
+
+		$("#btn-manual-generate").click(function(){
+			var p = $("#p").val();
+			var q = $("#q").val();
+			var e = $("#e").val();
+
+			if($("#radix span").text() == "Decimal"){
+				p = Enigmator.cryptanalysis.stringConvert.convertBase(String(p)).from(10).to(16);
+				q = Enigmator.cryptanalysis.stringConvert.convertBase(String(q)).from(10).to(16);
+				e = Enigmator.cryptanalysis.stringConvert.convertBase(String(e)).from(10).to(16);
+			}
+
+			var key = Enigmator.rsa.setKey(p,q,e);
+			$("#priv-key-manual").val(key.privKey);
+			$("#pub-key-manual").val(key.pubKey);
+
+			$("#div-result").show();
+		})
+
+		$("#radix").next().find("li").click(function(){
+			if($("#radix span").text() == "Hex"){
+				$("#e").val("10001");
+			}
+			else {
+				$("#e").val("65537");
+			}
+			
+		})
+
+		$("#btn-clear-auto").click(function(){
+			$("#pub-key").val("");
+			$("#priv-key").val("");
+		})
+
+		$("#btn-clear-manual").click(function(){
+			$("#p").val("");
+			$("#q").val("");
+			if($("#radix span").text() == "Hex"){
+				$("#e").val("10001");
+			}
+			else {
+				$("#e").val("65537");
+			}
+			$("#div-result").hide();
+		})
+	})
+</script>
+
+<body>
+	<div class="header">
+		<center><a href="../index.html"><img src="../img/title.png"></a></center>
+	</div>
+
+	<div class="loader">
+		<div>Processing...</div>
+	</div>
+
+	<div class="menubar noselect">
+	<div class="menu">
+		<ul>
+			<li id="btn-cipher" class="selected"><img src="../img/key.png"></li>
+			<li id="btn-encoding"><img src="../img/encoder.png"></li>
+			<li id="btn-hash"><img src="../img/hash.png"></li>
+			<li id="btn-cryptanalysis"><img src="../img/text.png"></li>
+			<li id="btn-about"><img src="../img/information.png"></li>
+		</ul>
+	</div>
+
+	<div class="sub-menu">
+		<h2 id="sub-menu-title">Cipher</h2>
+		<ul id="menu-encoding" class="hide">
+			
+		</ul>
+
+		<ul id="menu-cipher">
+		</ul>
+
+		<ul id="menu-hash" class="hide">
+			
+		</ul>
+
+		<ul id="menu-cryptanalysis" class="hide">
+			
+		</ul>
+
+		<ul id="menu-about" class="hide">
+			
+		</ul>
+
+	</div>
+	</div>
+
+	<div class="content">
+	<center><div class="main">
+		<div class="title">
+			<h2>RSA Key Generator</h2>
+		</div>
+
+		<div class="toggle-button">
+			<button id="btn-mode-auto" class="grey active">Automatic</button>
+			<button id="btn-mode-manual" class="grey">Manual</button>
+		</div>
+		<div class="clear"></div>
+
+		<div id="div-auto" class="">
+			<h5>Private Key :</h5>
+			<textarea id="priv-key" spellcheck="false" readonly=""></textarea>
+
+			<h5>Public Key :</h5>
+			<textarea id="pub-key" spellcheck="false" readonly=""></textarea>
+			<div class="clear"></div>
+
+			<button id="btn-auto-generate" class="blue left">Generate</button>
+			<div class="select left">
+				<button id="keySize" class="grey">Key Size : <span>1024</span> bit</button>
+				<ul class="option">
+					<li>512</li>
+					<li>1024</li>
+					<li>2048</li>
+					<li>4096</li>
+				</ul>
+			</div>
+			<button id="btn-clear-auto" class="grey left large">Clear</button>
+			<div class="clear"></div>
+			<div class="bot"></div>
+		</div>
+
+		<div id="div-manual" class="hide">
+			<h5>Prime 1 (p) :</h5>
+			<textarea class="short" id="p"></textarea>
+			<div class="clear"></div>
+			<h5>Prime 2 (q) :</h5>
+			<textarea class="short" id="q"></textarea>
+			<div class="clear"></div>
+			<div class="space"></div>
+
+			<h5>Public Exponent (e) :</h5>
+			<input type="text" id="e" value="65537">
+			<div class="clear"></div>
+			<h6><i>Warning : Generating key without random prime numbers will make it very insecure (this is for Educational Purpose only).</i></h6>
+			<!---
+			<h5>Private Exponent (d) :</h5>
+			<textarea class="short" id="d" disabled=""></textarea>
+			<div class="clear"></div>
+			<h5>Modulus (n) :</h5>
+			<textarea class="short" id="n" disabled=""></textarea>
+			<div class="clear"></div>
+			-->
+			<button id="btn-manual-generate" class="blue left">Generate</button>
+			<div class="select left">
+				<button id="radix" class="grey">Radix : <span>Decimal</span></button>
+				<ul class="option">
+					<li>Decimal</li>
+					<li>Hex</li>
+				</ul>
+			</div>
+			<button id="btn-clear-manual" class="grey left large">Clear</button>
+
+			<div class="clear"></div>
+			<div class="space"></div>
+
+			<div id="div-result" class="hide">
+				<h5>Private Key :</h5>
+				<textarea id="priv-key-manual" spellcheck="false" readonly=""></textarea>
+
+				<h5>Public Key :</h5>
+				<textarea id="pub-key-manual" spellcheck="false" readonly=""></textarea>
+				<div class="clear"></div>
+			</div>
+		</div>
+	</div></center>
+	</div>
+</body>
+</html>

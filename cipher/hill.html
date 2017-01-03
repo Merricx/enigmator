@@ -1,0 +1,167 @@
+<!DOCTYPE html PUBLIC "-//W3C//DTD XHTML 1.0 Transitional//EN" "http://www.w3.org/TR/xhtml1/DTD/xhtml1-transitional.dtd">
+<html xmlns="http://www.w3.org/1999/xhtml">
+<head>
+<meta http-equiv="Content-Type" content="text/html; charset=utf-8" />
+<meta name="viewport" content="width=device-width, initial-scale=1.0" />
+<link rel="stylesheet" type="text/css" href="../css/font.css">
+<link rel="stylesheet" type="text/css" href="../css/style.css">
+<link rel="stylesheet" type="text/css" href="../css/jquery-ui.css">
+<link rel="icon" href="../img/icon.png">
+<link rel="icon" href="../img/icon.png">
+<title>Hill Cipher - Enigmator</title>
+</head>
+
+<script type="text/javascript" src="../js/jquery.min.js"></script>
+<script type="text/javascript" src="../js/enigmator.js"></script>
+<script type="text/javascript" src="../js/main.js"></script>
+<script type="text/javascript">
+	method = Enigmator.hill;
+
+	execute = function(methodType){
+		var input = $("#input").val();
+		var key = parseKey();
+		var padChar = $("#padChar").val();
+
+		var str = methodType(input, key, padChar);
+		$("#output").val(str);
+	}
+
+	function loadGrid(size){
+		clearGrid(size);
+		for(var i=1; i <= size;i++){
+			var tr = $("#tr-row-"+i);
+			for(var j=1; j <= size;j++){
+				tr.append("<td><input id='key-"+i+"-"+j+"' type='text' maxlength='2' class='char-box'></td>");
+			}
+		}
+	}
+
+	function clearGrid(size){
+		var grid = $("#grid").html("");
+		for(var i=1; i <= size;i++){
+			grid.append("<tr id='tr-row-"+i+"'></tr>");
+		}
+	}
+
+	function parseKey(){
+		var size = $("#size span").text();
+		size = size.charAt(0);
+		var key = [];
+		for(var i=1; i <= size; i++){
+			key[i-1] = [];
+			for(var j=1; j <= size; j++){
+				if($("#key-"+i+"-"+j).val())
+					key[i-1][j-1] = $("#key-"+i+"-"+j).val();
+				else
+					key[i-1][j-1] = 0;
+			}
+		}
+		
+		return key;
+	}
+
+	$(document).ready(function(){
+		loadGrid(3);
+
+		$("#size .option li").click(function(){
+			var size = $("#size span").text();
+			size = size.charAt(0);
+			loadGrid(size);
+		})
+
+		$("#btn-random-key").click(function(){
+			var size = $("#size span").text();
+			size = size.charAt(0);
+			for(;;){
+				for(var i=1; i <= size; i++){
+					for(var j=1; j <= size; j++){
+						var randNum = Math.floor(Math.random()*26);
+						$("#key-"+i+"-"+j).val(randNum);
+					}
+				}
+				var det = findDet(parseKey());
+				if(det % 2 == 1 && det != 13){
+					break;
+				}
+			}
+		})
+	})
+</script>
+
+<body>
+	<div class="header">
+		<center><a href="../index.html"><img src="../img/title.png"></a></center>
+	</div>
+
+	<div class="menubar noselect">
+	<div class="menu">
+		<ul>
+			<li id="btn-cipher" class="selected"><img src="../img/key.png"></li>
+			<li id="btn-encoding"><img src="../img/encoder.png"></li>
+			<li id="btn-hash"><img src="../img/hash.png"></li>
+			<li id="btn-cryptanalysis"><img src="../img/text.png"></li>
+			<li id="btn-about"><img src="../img/information.png"></li>
+		</ul>
+	</div>
+
+	<div class="sub-menu">
+		<h2 id="sub-menu-title">Cipher</h2>
+		<ul id="menu-encoding" class="hide">
+		</ul>
+
+		<ul id="menu-cipher">
+		</ul>
+
+		<ul id="menu-hash" class="hide">
+			
+		</ul>
+
+		<ul id="menu-cryptanalysis" class="hide">
+		</ul>
+
+		<ul id="menu-about" class="hide">
+			
+		</ul>
+
+	</div>
+	</div>
+
+	<div class="content">
+	<center><div class="main">
+		<div class="title">
+			<h2>Hill Cipher</h2>
+		</div>
+
+		<div class="clear"></div>
+		<div id="size" class="select left">
+			<button class="grey">Hill Size : <span>3 x 3</span></button>
+			<ul class="option">
+				<li>2 x 2</li>
+				<li>3 x 3</li>
+			</ul>
+		</div>
+		<div class="clear"></div>
+
+		<h5>Input :</h5>
+		<textarea id="input" autofocus spellcheck="false"></textarea>
+		<div class="clear"></div>
+		<h5>Matrix Key :</h5>
+		<table id="grid" class="grid">
+		</table>
+		<h5 class="left">Character padding :</h5>
+		<input type="text" id="padChar" maxlength="1" value="X" class="small">
+		<div class="clear"></div>
+
+		<button id="btn-enc" class="red left">Encrypt</button>
+		<button id="btn-dec" class="blue left">Decrypt</button>
+		<button id="btn-random-key" class="grey left">Random key</button>
+		<div class="clear"></div>
+
+		<h5>Output :</h5>
+		<textarea id="output" readonly></textarea>
+		<button id="btn-clear" class="grey left large">Clear</button>
+		<div class="clear"></div>
+	</div></center>
+	</div>
+</body>
+</html>

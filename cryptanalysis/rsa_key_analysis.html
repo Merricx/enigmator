@@ -1,0 +1,199 @@
+<!DOCTYPE html PUBLIC "-//W3C//DTD XHTML 1.0 Transitional//EN" "http://www.w3.org/TR/xhtml1/DTD/xhtml1-transitional.dtd">
+<html xmlns="http://www.w3.org/1999/xhtml">
+<head>
+<meta http-equiv="Content-Type" content="text/html; charset=utf-8" />
+<meta name="viewport" content="width=device-width, initial-scale=1.0" />
+<link rel="stylesheet" type="text/css" href="../css/font.css">
+<link rel="stylesheet" type="text/css" href="../css/style.css">
+<link rel="stylesheet" type="text/css" href="../css/jquery-ui.css">
+<link rel="icon" href="../img/icon.png">
+<title>RSA Key Analysis - Enigmator</title>
+</head>
+
+<script type="text/javascript" src="../js/jquery.min.js"></script>
+<script type="text/javascript" src="../js/lib/jsencrypt/jsencrypt.js"></script>
+<script type="text/javascript" src="../js/lib/utils/BigInt.js"></script>
+<script type="text/javascript" src="../js/enigmator.js"></script>
+<script type="text/javascript" src="../js/main.js"></script>
+<script type="text/javascript">
+
+	$(document).ready(function(){
+
+		$("#btn-analyze").click(function(){
+
+			var key = $("#input").val();
+			var size = "";
+			var type = "Public";
+			if(!/^-----BEGIN.*KEY-----[a-zA-Z0-9=\s\/\+]+-----END.*KEY-----/.test(key)){
+				alert("Invalid RSA Key");
+				return false;
+			}
+
+			var result = Enigmator.rsa.getRawKey(key);
+			if(result.e != null) {
+				if($("#radix span").text() == "Hex")
+					result.e = "0x"+Enigmator.cryptanalysis.stringConvert.convertBase(String(result.e)).from(10).to(16);
+				$("#e").val(result.e);
+				$("#div-e").show();
+			}
+			else $("#div-e").hide();
+			if(result.n != null) {
+				nHex = Enigmator.cryptanalysis.stringConvert.convertBase(String(result.n)).from(10).to(16);
+				size = nHex.length/2 * 8;
+				if($("#radix span").text() == "Hex")
+					result.n = "0x"+nHex;
+				$("#n").val(result.n); 
+				$("#div-n").show();
+			}
+			else $("#div-n").hide();
+			if(result.d != null) {
+				if($("#radix span").text() == "Hex")
+					result.d = "0x"+Enigmator.cryptanalysis.stringConvert.convertBase(String(result.d)).from(10).to(16);
+				$("#d").val(result.d); 
+				$("#div-d").show();
+				type = "Private";
+			}
+			else $("#div-d").hide();
+			if(result.p != null) {
+				if($("#radix span").text() == "Hex")
+					result.p = "0x"+Enigmator.cryptanalysis.stringConvert.convertBase(String(result.p)).from(10).to(16);
+				$("#p").val(result.p); 
+				$("#div-p").show();
+			}
+			else $("#div-p").hide();
+			if(result.q != null) {
+				if($("#radix span").text() == "Hex")
+					result.q = "0x"+Enigmator.cryptanalysis.stringConvert.convertBase(String(result.q)).from(10).to(16);
+				$("#q").val(result.q); 
+				$("#div-q").show();
+			}
+			else $("#div-q").hide();
+
+			$("#RSASize").html("RSA "+type+" Key : &emsp;<span>"+size+" bit</span>");
+
+			$("#div-output").show();
+		})
+
+		$("#btn-clear").click(function(){
+			$("#input").val("");
+			$("#div-output").hide();
+		})
+	})
+</script>
+
+<style type="text/css">
+	div#output {
+		margin: 5px;
+		padding: 10px;
+		background-color: #e0e0e0;
+		border-radius: 2px;
+		margin-bottom: 20px;
+		overflow: auto;
+	}
+
+	div#output textarea {
+		background-color: #e0e0e0;
+	}
+
+	div#output h5 span {
+		color: #f44336;
+	}
+</style>
+
+<body>
+	<div class="header">
+		<center><a href="../index.html"><img src="../img/title.png"></a></center>
+	</div>
+
+	<div class="menubar noselect">
+	<div class="menu">
+		<ul>
+			<li id="btn-cipher"><img src="../img/key.png"></li>
+			<li id="btn-encoding"><img src="../img/encoder.png"></li>
+			<li id="btn-hash"><img src="../img/hash.png"></li>
+			<li id="btn-cryptanalysis" class="selected"><img src="../img/text.png"></li>
+			<li id="btn-about"><img src="../img/information.png"></li>
+		</ul>
+	</div>
+
+	<div class="sub-menu">
+		<h2 id="sub-menu-title">Cryptanalysis</h2>
+		<ul id="menu-encoding" class="hide">
+			
+		</ul>
+
+		<ul id="menu-cipher" class="hide">
+			
+		</ul>
+
+		<ul id="menu-hash" class="hide">
+			
+		</ul>
+
+		<ul id="menu-cryptanalysis">
+		</ul>
+
+		<ul id="menu-about" class="hide">
+			
+		</ul>
+
+	</div>
+	</div>
+
+	<div class="content">
+	<center><div class="main">
+		<div class="title">
+			<h2>RSA Key Analysis</h2>
+		</div>
+
+		<div class="clear"></div>
+
+		<h5>RSA Key :</h5>
+		<textarea id="input" autofocus spellcheck="false"></textarea>
+		<h6><i>Note : Key must be encoded in PEM format</i></h6>
+
+		<div id="div-options" class="hide">
+		</div>
+		<div class="clear"></div>
+
+		<button id="btn-analyze" class="blue left">Analyze</button>
+		<button id="btn-clear" class="grey left large">Clear</button>
+		<div class="select left">
+			<button id="radix" class="grey">Radix : <span>Decimal</span></button>
+			<ul class="option">
+				<li>Decimal</li>
+				<li>Hex</li>
+			</ul>
+		</div>
+		<div class="clear"></div>
+
+		<div id="div-output" class="hide">
+			<h5>Output :</h5>
+			<div id="output">
+				<h5 id="RSASize"></h5>
+				<div class="space"></div>
+				<div id="div-e">
+					<h5>Public Exponent (e) :</h5>
+					<textarea id="e" readonly=""></textarea>
+				</div>
+				<div id="div-n">
+					<h5>Modulus (n) :</h5>
+					<textarea id="n" readonly=""></textarea>
+				</div>
+				<div id="div-d">
+					<h5>Private Exponent (d) :</h5>
+					<textarea id="d" readonly=""></textarea>
+				</div>
+				<div id="div-p">
+					<h5>Prime (p) :</h5>
+					<textarea id="p" readonly=""></textarea>
+				<div id="div-q">
+					<h5>Prime (q) :</h5>
+					<textarea id="q" readonly=""></textarea>
+				</div>
+			</div>
+		</div>
+	</div></center>
+	</div>
+</body>
+</html>
