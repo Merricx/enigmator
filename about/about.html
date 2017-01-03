@@ -1,0 +1,100 @@
+<!DOCTYPE html PUBLIC "-//W3C//DTD XHTML 1.0 Transitional//EN" "http://www.w3.org/TR/xhtml1/DTD/xhtml1-transitional.dtd">
+<html xmlns="http://www.w3.org/1999/xhtml">
+<head>
+<meta http-equiv="Content-Type" content="text/html; charset=utf-8" />
+<meta name="viewport" content="width=device-width, initial-scale=1.0" />
+<link rel="stylesheet" type="text/css" href="../css/font.css">
+<link rel="stylesheet" type="text/css" href="../css/style.css">
+<link rel="icon" href="../img/icon.png">
+<title>About - Enigmator</title>
+</head>
+
+<script type="text/javascript" src="../js/jquery.min.js"></script>
+<script type="text/javascript" src="../js/main.js"></script>
+<script type="text/javascript" src="../js/enigmator.js"></script>
+<script type="text/javascript">
+
+	$(document).ready(function(){
+
+		$("#version").text("Enigmator v"+Enigmator.version);
+	})
+	
+</script>
+
+<body>
+	<div class="header">
+		<center><a href="../index.html"><img src="../img/title.png"></a></center>
+	</div>
+
+	<div class="menubar noselect">
+	<div class="menu">
+		<ul>
+			<li id="btn-cipher"><img src="../img/key.png"></li>
+			<li id="btn-encoding"><img src="../img/encoder.png"></li>
+			<li id="btn-hash"><img src="../img/hash.png"></li>
+			<li id="btn-cryptanalysis"><img src="../img/text.png"></li>
+			<li id="btn-about" class="selected"><img src="../img/information.png"></li>
+		</ul>
+	</div>
+
+	<div class="sub-menu">
+		<h2 id="sub-menu-title">About</h2>
+		<ul id="menu-encoding" class="hide">
+			
+		</ul>
+
+		<ul id="menu-cipher" class="hide">
+			
+		</ul>
+
+		<ul id="menu-hash" class="hide">
+			
+		</ul>
+
+		<ul id="menu-cryptanalysis" class="hide">
+			
+		</ul>
+
+		<ul id="menu-about">
+		</ul>
+
+	</div>
+	</div>
+
+	<div class="content">
+	<center><div class="main">
+		<div class="title">
+			<h2>About</h2>
+		</div>
+
+		<div class="clear"></div>
+		<div>
+			<h4 id="version"></h4>
+			<p><b>by <a href="http://github.com/merricx">Merricx</a></b></p>
+			<br>
+			<p>Enigmator is All-in-One Web-based Cryptography Tools and was built with Javascript. <br>Enigmator is collection of tools which packaged some great Libraries (such as CryptoJS, JSEncrypt, etc..) into one Code, so it's become easier to use.
+			<br><br>
+			<b>Third-Party Libraries :<br>
+			-&emsp;<a href="https://code.google.com/p/crypto-js/">CryptoJS</a><br>
+			-&emsp;<a href="https://github.com/travist/jsencrypt">JSEncrypt</a><br>
+			-&emsp;<a href="https://github.com/agnoster/base32-js">Base32-js</a><br>
+			-&emsp;<a href="https://gist.github.com/sukima/5613286">XORCipher.js</a><br>
+			-&emsp;<a href="http://pajhome.org.uk/crypt/">md4.js</a><br>
+			-&emsp;<a href="https://dojotoolkit.org/">blowfish.js from Dojo Toolkit (Cut off by Sladex)</a><br>
+			-&emsp;<a href="http://www.leemon.com/crypto/BigInt.js">BigInt.js</a><br>
+			-&emsp;<a href="http://underscorejs.org/">Underscore.js</a><br>
+			-&emsp;<a href="https://jquery.com/">jQuery</a> and <a href="https://jqueryui.com/">jQueryUI</a><br>
+			</b>
+			<br>
+			<b>References :<br>
+			-&emsp;<a href="http://practicalcryptography.com/">practicalcryptography.com</a><br>
+			-&emsp;<a href="http://stackoverflow.com/">stackoverflow.com</a><br>
+			-&emsp;<a href="http://phpjs.org/">phpjs.org</a><br>
+			</b>
+			</p>
+			<div class="space"></div>
+		</div>
+	</div></center>
+	</div>
+</body>
+</html>
