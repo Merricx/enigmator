@@ -1270,10 +1270,10 @@ if(rng_pool == null) {
   rng_pool = new Array();
   rng_pptr = 0;
   var t;
-  if(window.crypto && window.crypto.getRandomValues) {
+  if(self.crypto && self.crypto.getRandomValues) {
     // Extract entropy (2048 bits) from RNG if available
     var z = new Uint32Array(256);
-    window.crypto.getRandomValues(z);
+    self.crypto.getRandomValues(z);
     for (t = 0; t < z.length; ++t)
       rng_pool[rng_pptr++] = z[t] & 255;
   } 
@@ -1283,20 +1283,20 @@ if(rng_pool == null) {
   var onMouseMoveListener = function(ev) {
     this.count = this.count || 0;
     if (this.count >= 256 || rng_pptr >= rng_psize) {
-      if (window.removeEventListener)
-        window.removeEventListener("mousemove", onMouseMoveListener);
-      else if (window.detachEvent)
-        window.detachEvent("onmousemove", onMouseMoveListener);
+      if (self.removeEventListener)
+        self.removeEventListener("mousemove", onMouseMoveListener);
+      else if (self.detachEvent)
+        self.detachEvent("onmousemove", onMouseMoveListener);
       return;
     }
     this.count += 1;
     var mouseCoordinates = ev.x + ev.y;
     rng_pool[rng_pptr++] = mouseCoordinates & 255;
   };
-  if (window.addEventListener)
-    window.addEventListener("mousemove", onMouseMoveListener);
-  else if (window.attachEvent)
-    window.attachEvent("onmousemove", onMouseMoveListener);
+  if (self.addEventListener)
+    self.addEventListener("mousemove", onMouseMoveListener);
+  else if (self.attachEvent)
+    self.attachEvent("onmousemove", onMouseMoveListener);
   
 }
 
@@ -1830,7 +1830,7 @@ JSX.env.parseUA = function(agent) {
     },
 
     ua = agent || (navigator && navigator.userAgent),
-    loc = window && window.location,
+    loc = self && self.location,
     href = loc && loc.href,
     m;
 
@@ -1838,8 +1838,8 @@ JSX.env.parseUA = function(agent) {
 
     if (ua) {
 
-        if ((/windows|win32/i).test(ua)) {
-            o.os = 'windows';
+        if ((/selfs|win32/i).test(ua)) {
+            o.os = 'selfs';
         } else if ((/macintosh/i).test(ua)) {
             o.os = 'macintosh';
         } else if ((/rhino/i).test(ua)) {
@@ -3199,7 +3199,7 @@ Hex.decode = function(a) {
 };
 
 // export globals
-window.Hex = Hex;
+self.Hex = Hex;
 })();// Base64 JavaScript decoder
 // Copyright (c) 2008-2013 Lapo Luchini <lapo@lapo.it>
 
@@ -3284,7 +3284,7 @@ Base64.unarmor = function (a) {
 };
 
 // export globals
-window.Base64 = Base64;
+self.Base64 = Base64;
 })();// ASN.1 JavaScript decoder
 // Copyright (c) 2008-2013 Lapo Luchini <lapo@lapo.it>
 
@@ -3818,7 +3818,7 @@ ASN1.test = function () {
 };
 
 // export globals
-window.ASN1 = ASN1;
+self.ASN1 = ASN1;
 })();/**
  * Retrieve the hexadecimal value (as a string) of the current ASN.1 element
  * @returns {string}
@@ -4318,6 +4318,67 @@ JSEncrypt.prototype.getPublicKeyB64 = function () {
   // Return the private representation of this key.
   return this.getKey().getPublicBaseKeyB64();
 };
+
+
+/**
+  * Slight modifications for Enigmator
+*/
+JSEncrypt.prototype.getRawKey = function(){
+
+  var result = {e:null, n:null, d:null, p:null, q:null};
+  result.e =  this.key.e;
+  result.n = this.key.n.toString();
+  if(this.key.d) result.d = this.key.d.toString();
+  if(this.key.p) result.p = this.key.p.toString();
+  if(this.key.q) result.q = this.key.q.toString();
+
+  return result;
+}
+
+JSEncrypt.prototype.setManualKey = function(p,q,e){
+
+  p = p || null; q = q || null; e = e || "010001";
+  tempKey = {};
+  tempKey.e = parseInt(e, 16);
+  var ee = new BigInteger(e,16);
+  if(p != null && q != null){
+    tempKey.p = parseBigInt(p,16);
+    tempKey.q = parseBigInt(q,16);
+
+    if(!tempKey.p.isProbablePrime(10)){
+      alert("Prime p is not Prime number!");
+      return false;
+    }
+    if(!tempKey.q.isProbablePrime(10)){
+     alert("Prime q is not Prime number!"); 
+     return false;
+    }
+
+    if(tempKey.p.compareTo(tempKey.q) <= 0) {
+      var t = tempKey.p;
+      tempKey.p = tempKey.q;
+      tempKey.q = t;
+    }
+
+    var p1 = tempKey.p.subtract(BigInteger.ONE);
+    var q1 = tempKey.q.subtract(BigInteger.ONE);
+    var phi = p1.multiply(q1);
+
+    if(phi.gcd(ee).compareTo(BigInteger.ONE) != 0){
+      alert("Public exponent hasn't Great Common Divisor (GCD) of 1 with ϕ(n)!");
+      return false;
+    }
+
+    tempKey.n = tempKey.p.multiply(tempKey.q);
+    tempKey.d = ee.modInverse(phi);
+    tempKey.dmp1 = tempKey.d.mod(p1);
+    tempKey.dmq1 = tempKey.d.mod(q1);
+    tempKey.coeff = tempKey.q.modInverse(tempKey.p);
+  }
+
+  this.setKey(tempKey);
+  return true;
+}
 
 exports.JSEncrypt = JSEncrypt;
 })(JSEncryptExports);

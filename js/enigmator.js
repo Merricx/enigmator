@@ -1,5 +1,5 @@
 /*******************************************	
-*	Enigmator v0.1.5
+*	Enigmator v0.1.23
 *	Written by : Merricx
 *
 /********************************************/
@@ -253,18 +253,25 @@ var Enigmator = {
 	-----------------------------------------------*/
 	rsa: {
 
-		generateKeys: function(type, keySize){
+		generateKeys: function(keySize){
 			var keySize = parseInt(keySize);
 			var rsa = new JSEncrypt({default_key_size: keySize});
 
 			rsa.getKey();
-			if(type == "public"){
-				return rsa.getPublicKey();
+			key = {privKey:null,pubKey:null}
+			key.privKey = rsa.getPrivateKey();
+			key.pubKey = rsa.getPublicKey();
+			return key;
+		},
+
+		setKey: function(p, q, e){
+			var rsa = new JSEncrypt();
+			var key = {};
+			if(rsa.setManualKey(p,q,e)){
+				key.pubKey = rsa.getPublicKey();
+				key.privKey = rsa.getPrivateKey();
 			}
-			else if(type == "private")
-			{
-				return rsa.getPrivateKey();
-			}
+			return key;
 		},
 
 		getPublicKey: function(privKey){
@@ -272,10 +279,15 @@ var Enigmator = {
 			return rsa.getPublicKey();
 		},
 
-		enc: function(text, privKey, pubKey){
+		getRawKey: function(key, radix){
 			var rsa = new JSEncrypt();
-			if(pubKey) rsa.setPublicKey(pubKey);
-			if(privKey) rsa.setPrivateKey(privKey);
+			rsa.setKey(key);
+			return rsa.getRawKey();
+		},
+
+		enc: function(text, key){
+			var rsa = new JSEncrypt();
+			rsa.setKey(key);
 			
 			return rsa.encrypt(text);
 		},
@@ -705,7 +717,7 @@ var Enigmator = {
 			var hash = CryptoJS.MD5(str);
 		else
 			var hash = CryptoJS.HmacMD5(str, hmac);
-		return hash;
+		return hash.toString(CryptoJS.enc.Hex);
 	},
 
 	/*-----------------------------------------------
@@ -723,7 +735,7 @@ var Enigmator = {
 			var hash = CryptoJS.SHA1(str);
 		else
 			var hash = CryptoJS.HmacSHA1(str, hmac);
-		return hash;
+		return hash.toString(CryptoJS.enc.Hex);
 	},
 
 	/*-----------------------------------------------
@@ -741,7 +753,7 @@ var Enigmator = {
 			var hash = CryptoJS.SHA256(str);
 		else
 			var hash = CryptoJS.HmacSHA256(str, hmac);
-		return hash;
+		return hash.toString(CryptoJS.enc.Hex);
 	},
 
 	/*-----------------------------------------------
@@ -759,7 +771,7 @@ var Enigmator = {
 			var hash = CryptoJS.SHA512(str);
 		else
 			var hash = CryptoJS.HmacSHA512(str, hmac);
-		return hash;
+		return hash.toString(CryptoJS.enc.Hex);
 	},
 
 	/*-----------------------------------------------
@@ -778,7 +790,7 @@ var Enigmator = {
 			var hash = CryptoJS.SHA3(str, {outputLength: length});
 		else
 			var hash = CryptoJS.HmacSHA3(str, hmac, {outputLength: length});
-		return hash;
+		return hash.toString(CryptoJS.enc.Hex);
 	},
 
 	/*-----------------------------------------------
@@ -796,7 +808,7 @@ var Enigmator = {
 			var hash = CryptoJS.RIPEMD160(str);
 		else
 			var hash = CryptoJS.HmacRIPEMD160(str, hmac);
-		return hash;
+		return hash.toString(CryptoJS.enc.Hex);
 	},
 
 	/*-----------------------------------------------
@@ -835,6 +847,75 @@ var Enigmator = {
 			}
 		}
 		return result;
+	},
+
+	/*------------------------------------------------
+		Simple Substitution Cipher
+	------------------------------------------------*/
+	substitution: {
+
+		enc: function(text, key){
+
+			text = text.toUpperCase();
+			key = Enigmator.substitution.generateKey(key);
+
+			var character, replaced;
+			var alpha = "ABCDEFGHIJKLMNOPQRSTUVWXYZ";
+			var result = "";
+
+			for(var i=0; i < text.length; i++){
+				character = text.charAt(i);
+				if(/[A-Z]/.test(character)){
+					replaced = key.charAt(alpha.indexOf(character));
+					result += replaced;
+				} else {
+					result += character;
+				}
+			}
+
+			return result;
+		},
+
+		dec: function(text, key){
+
+			text = text.toUpperCase();
+			key = Enigmator.substitution.generateKey(key);
+
+			var character, replaced;
+			var alpha = "ABCDEFGHIJKLMNOPQRSTUVWXYZ";
+			var result = "";
+
+			for(var i=0; i < text.length; i++){
+				character = text.charAt(i);
+				if(/[A-Z]/.test(character)){
+					replaced = alpha.charAt(key.indexOf(character));
+					result += replaced;
+				} else {
+					result += character;
+				}
+			}
+
+			return result;
+		},
+
+		generateKey: function(key){
+			
+			key = key.toUpperCase().replace(/[^A-Z]/g, "");
+			var alphabet =  key+"ABCDEFGHIJKLMNOPQRSTUVWXYZ";
+
+			var result = [];
+			var character;
+			var index = 0;
+			for(var i=0; i < alphabet.length; i++){
+				character = alphabet.charAt(i);
+				if(result.indexOf(character) == -1){
+					result[index] = character;
+					index++;
+				}
+			}
+			
+			return result.join("");
+		}
 	},
 
 	/*-----------------------------------------------
@@ -1103,6 +1184,7 @@ var Enigmator = {
 
 			var cipher = text.replace(/[^.\-\/\s]/g, "").split(" ");
 			var result = "";
+			console.log(cipher);
 
 			for(var i=0; i < cipher.length; i++){
 				var morseIndex = Enigmator.morse.symbol.indexOf(cipher[i]);
@@ -1656,72 +1738,9 @@ var Enigmator = {
         		chars.splice(index,1);
 			}
 			return result;
-		},
-
-		//Coming soon, under development
-		crack: function(text, omitChar){
-
-			omitChar = omitChar || "J";
-
-			var regOmit = new RegExp("["+omitChar+"]","g");
-			text = text.toUpperCase().replace(/[^A-Z]/g, "").replace(regOmit, "");
-
-			var len = text.length;
-			var TEMP = 20;//10 + 0.087 * (len - 84);
-			var e = 1/2.178;
-			var STEP = 0.2;
-			var dF = 0;
-
-			var parentKey = Enigmator.playfair.randomKey(omitChar);
-			var childKey = "";
-
-			for(var T=TEMP; T >= 0; T -= STEP){
-				for(var i=0; i < 10000; i++){
-					var parentScore = Enigmator.cryptanalysis.scoreText(Enigmator.playfair.dec(text, parentKey, omitChar));
-					var randNum = Math.floor(51 * Math.random());
-					console.log(parentScore);
-					switch(randNum){
-						case 0:
-							//Reverse the key
-							childKey = parentKey.split("").reverse().join("");
-							break;
-						case 1:
-							//flip top to bottom
-							childKey = flipTopBottom(parentKey);
-							break;
-						case 2:
-							//flip left to right
-							childKey = flipLeftRight(parentKey);
-							break;
-						case 3:
-							//swap 2 rows, chosen at random
-							childKey = swap2Rows(parentKey);
-							break;
-						case 4:
-							//swap 2 columns, at random
-							childKey = swap2Cols(parentKey);
-							break;
-						default:
-							//swap two letters at random
-							childKey = swap2Letters(parentKey);
-					}
-
-					childScore = Enigmator.cryptanalysis.scoreText(Enigmator.playfair.dec(text, childKey, omitChar));
-					dF = parentScore - childScore;
-					if(dF < 0){
-						parentKey = childKey;
-					}
-					else if(dF > 0){
-						var prob = e^(dF/T);
-						if(prob > (1.0*Math.random())){
-							parentKey = childKey;
-						}
-					}
-				}
-			}
-			return parentKey;
-
 		}
+
+		
 	},
 
 	/*-----------------------------------------------
@@ -1970,6 +1989,109 @@ var Enigmator = {
 		}
 	},
 
+	hill: {
+
+		enc: function(text, key, padChar){
+
+			padChar = padChar || "X";
+
+			text = text.toUpperCase().replace(/[^A-Z]/g, "");
+			var size = key.length;
+			var cipherArr = [];
+			var result = "";
+
+			var alpha = "ABCDEFGHIJKLMNOPQRSTUVWXYZ";
+			var remain = text.length % size;
+			if(remain != 0){
+				for(var i=0; i < size-remain; i++){
+					text += padChar.toUpperCase();
+					console.log(text);
+				}
+			}
+
+			var determinant = findDet(key);
+			if(determinant % 2 == 0 || determinant == 13){
+				alert("Matrix key is not valid! Try other key.");
+				return;
+			}
+
+			for(var i=0; i < size; i++){
+				for(var j=0; j < size;j++){
+					key[i][j] = key[i][j] % 26;
+				}
+			}
+			for(var i=0; i < text.length; i+=size){
+				for(var j=0; j < size; j++){
+					cipherArr[j] = 0;
+					for(var k=0; k < size; k++){
+						char = alpha.indexOf(text.charAt(i+k));
+						cipherArr[j] += key[j][k]*char;
+					}
+					result += alpha.charAt((cipherArr[j]) % 26);
+				}
+					
+			}
+
+			return result;
+
+		},
+
+		dec: function(text, key, padChar){
+
+			padChar = padChar || "X";
+
+			text = text.toUpperCase().replace(/[^A-Z]/g, "");
+			var inv_key = [];
+			var size = key.length;
+			if(text.length % size != 0){
+				alert("Ciphertext length isn't divisible with the Key size");
+				return;
+			}
+			var plainArr = [];
+			var result = "";
+
+			var alpha = "ABCDEFGHIJKLMNOPQRSTUVWXYZ";
+
+			var determinant = findDet(key);
+			key = adj(key);
+			var inv_determinant = 0;
+
+			for(var i=0; i < size; i++){
+				for(var j=0; j < size;j++){
+					key[i][j] = key[i][j] % 26;
+					if(key[i][j] < 0)
+						key[i][j] += 26;
+				}
+			}
+
+			if(determinant % 2 == 0 || determinant == 13){
+				alert("Matrix key is incorrect!");
+				return;
+			}
+
+			//find Modular Multiplicative Inverse of Determinant
+			for(var i=1; i <= 25;i+=2){
+				if((determinant*i) % 26 == 1)
+					inv_determinant = i;
+			}
+
+			for(var i=0; i < size; i++){
+				inv_key[i] = [];
+				for(var j=0; j < size; j++){
+					inv_key[i][j] = (inv_determinant*key[i][j]) % 26;
+					if(inv_key[i][j] < 0)
+						inv_key[i][j] += 26;
+				}
+			}
+
+			//console.log(determinant, inv_determinant, key, inv_key);
+
+			result = Enigmator.hill.enc(text, inv_key);
+			return result;
+
+		}
+	},
+
 
 	/*-----------------------------------------------
 		DANCING MEN CIPHER
@@ -2200,9 +2322,6 @@ var Enigmator = {
 		stringConvert: {
 
 			/*--------------------------------------------
-				Inspired from Faisalman <fyzlman@gmail.com> 
-				(https://gist.github.com/faisalman)
-
 				require : 
 				- Utils		BigInt.js
 			----------------------------------------------*/
@@ -2272,7 +2391,7 @@ var Enigmator = {
 		}
 	},
 
-	version: "0.1.17"
+	version: "0.1.23"
 };
 
 /*********************************************
@@ -2328,72 +2447,49 @@ function getIndexOf(array, c){
 	}
 }
 
-function swap2Letters(key){
-	
-	key = key.split("");
+//get Adjoint of given matrix
+function adj(matrix){
 
-	var i = Math.floor(25*Math.random());
-	var j = Math.floor(25*Math.random());
-	var temp = key[i];
-	key[i] = key[j];
-	key[j] = temp;
+	var size = matrix.length;
+	var temp;
 
-	return key.join("");
-}
-
-function swap2Rows(key){
-
-	key = key.split("");
-
-	var i = Math.floor(5*Math.random());
-	var j = Math.floor(5*Math.random());
-	for(var k=0; k < 5; k++){
-		var temp = key[i*5 + k];
-		key[i*5 + k] = key[j*5 + k];
-		key[j*5 + k] = temp;
+	if(size == 2){
+		var new_matrix = [[],[]];
+		new_matrix[0][1] = matrix[0][1]*-1;
+		new_matrix[1][0] = matrix[1][0]*-1;
+		new_matrix[0][0] = matrix[1][1];
+		new_matrix[1][1] = matrix[0][0];
+		return new_matrix;
 	}
-
-	return key.join("");
-}
-
-function swap2Cols(key){
-
-	key = key.split("");
-
-	var i = Math.floor(5*Math.random());
-	var j = Math.floor(5*Math.random());
-	for(var k=0; k < 5; k++){
-		var temp = key[k*5 + i];
-		key[k*5 + i] = key[k*5 + j];
-		key[k*5 + j] = temp;
+	else if(size == 3){
+		var new_matrix = [[],[],[]];
+		new_matrix[0][0] = (matrix[1][1]*matrix[2][2]-matrix[1][2]*matrix[2][1]);
+		new_matrix[0][1] = (matrix[0][1]*matrix[2][2]-matrix[0][2]*matrix[2][1])*-1;
+		new_matrix[0][2] = (matrix[0][1]*matrix[1][2]-matrix[0][2]*matrix[1][1]);
+		new_matrix[1][0] = (matrix[1][0]*matrix[2][2]-matrix[1][2]*matrix[2][0])*-1;
+		new_matrix[1][1] = (matrix[0][0]*matrix[2][2]-matrix[0][2]*matrix[2][0]);
+		new_matrix[1][2] = (matrix[0][0]*matrix[1][2]-matrix[0][2]*matrix[1][0])*-1;
+		new_matrix[2][0] = (matrix[1][0]*matrix[2][1]-matrix[1][1]*matrix[2][0]);
+		new_matrix[2][1] = (matrix[0][0]*matrix[2][1]-matrix[0][1]*matrix[2][0])*-1;
+		new_matrix[2][2] = (matrix[0][0]*matrix[1][1]-matrix[0][1]*matrix[1][0]);
+		return new_matrix;
 	}
-
-	return key.join("");
 }
 
-function flipTopBottom(key){
+//Find determinant for given matrix
+function findDet(matrix){
 
-	var oldKey = key.split("");
-	var newKey = key.split("");
+	var size = matrix.length;
+	var det = 0;
 
-	for(k=0;k<5;k++)
-		for(j=0;j<5;j++)
-			newKey[k*5 + j] = oldKey[(4-k)*5+j];
-
-	newKey[25] = "";
-	return newKey.join("");
-}
-
-function flipLeftRight(key){
-
-	var oldKey = key.split("");
-	var newKey = key.split("");
-
-	for(k=0;k<5;k++)
-		for(j=0;j<5;j++)
-			newKey[j*5 + k] = oldKey[(4-j)*5+k];
-
-	newKey[25] = "";
-	return newKey.join("");
-
+	if(size == 2){
+		det = (matrix[0][0]*matrix[1][1])-(matrix[0][1]*matrix[1][0]);
+		return ((det%26)+26)%26;
+	}
+	else if(size == 3){
+		val1 = (matrix[0][0]*matrix[1][1]*matrix[2][2]+matrix[0][1]*matrix[1][2]*matrix[2][0]+matrix[0][2]*matrix[1][0]*matrix[2][1]);
+		val2 = (matrix[0][2]*matrix[1][1]*matrix[2][0]+matrix[0][0]*matrix[1][2]*matrix[2][1]+matrix[0][1]*matrix[1][0]*matrix[2][2]);
+		det = val1 - val2;
+		return ((det%26)+26)%26;
+	}
 }
